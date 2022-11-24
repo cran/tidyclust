@@ -1,0 +1,28 @@
+# Check non-translated core arguments
+# Each model has its own definition of this
+check_args <- function(object) {
+  UseMethod("check_args")
+}
+
+check_args.default <- function(object) {
+  invisible(object)
+}
+
+check_spec_pred_type <- function(object, type) {
+  if (!spec_has_pred_type(object, type)) {
+    possible_preds <- names(object$spec$method$pred)
+    rlang::abort(c(
+      glue::glue("No {type} prediction method available for this model."),
+      glue::glue(
+        "Value for `type` should be one of: ",
+        glue::glue_collapse(glue::glue("'{possible_preds}'"), sep = ", ")
+      )
+    ))
+  }
+  invisible(NULL)
+}
+
+spec_has_pred_type <- function(object, type) {
+  possible_preds <- names(object$spec$method$pred)
+  any(possible_preds == type)
+}
