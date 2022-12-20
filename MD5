@@ -1,6 +1,7 @@
-42ee10e9126769005e36649053f6aae9 *DESCRIPTION
+5c013c27bd473a87cf94952d2149b597 *DESCRIPTION
 0342b86a5fe3810bb778afa847bc3cd3 *LICENSE
 956e8fd6205e06c622bbd479b8a8b75a *NAMESPACE
+02b94d254981a2a59c51859d6b918b73 *NEWS.md
 b74ffcebb7afd9a1a05fed3e1cb9b8b8 *R/aaa.R
 351883b3308760491e0840aa368dd9d3 *R/arguments.R
 86df48c1dc8fb387e38bbc05da13992f *R/augment.R
@@ -11,7 +12,7 @@ f3ac240e3299e9c492b3262f89df218d *R/compat-purrr.R
 414c033ff38dcb683eea121eaa36548c *R/convert_data.R
 abe4193d50e86c2981eaf41fcb83d714 *R/engines.R
 5f715e25b207c1ec0211714283aff23e *R/extract.R
-a92d97bf2bf58e4024364fe805f9b354 *R/extract_assignment.R
+fe332039ff1d08ede6869b5aab967fde *R/extract_assignment.R
 ba6029da089736364e00f44246ccddd4 *R/extract_characterization.R
 c25e77c339b87e93e6c3c9b020d06f76 *R/extract_parameter_set_dials.R
 8ecfbcb93e0cf358afd2678131d1da19 *R/extract_summary.R
@@ -25,12 +26,12 @@ ac98887b041bb0baea0d0e985d690945 *R/k_means.R
 175d27321bf9a00acf02203b0e4d7e43 *R/load_ns.R
 e92f18c7ff680dd84ecb8fa423f95619 *R/metric-aaa.R
 558d41967af111bf176d38975213df8e *R/metric-helpers.R
-fb8a651c7472ec2374ed66be62d12389 *R/metric-silhouette.R
+2b398061140413a0184fbfc8748fc30e *R/metric-silhouette.R
 f0f45066ae686473db3574861a638b11 *R/metric-sse.R
 1edc3397e23f2155356579ced0ecd012 *R/misc.R
 4b975b96932f1c8ace65ea2c686a29ae *R/predict.R
 ed6f68a428eb28ae4bae46e6a13ad6ee *R/predict_cluster.R
-d1c88be7580ab318f4d4129d241c816c *R/predict_helpers.R
+d0a49ff84905228b9b33b15ba641a97f *R/predict_helpers.R
 cdcb2713a3c09e30119a26b159e4e393 *R/predict_raw.R
 6904973d14496746d031a18393edadbd *R/print.R
 2b443e8ee0a332dbbc8f4432be0b3e7e *R/pull.R
@@ -42,7 +43,7 @@ cbe50957d751e7b881b4faeb25fee555 *R/tidyclust-package.R
 75e6580ab2aa83efde2b7b7a1334ee05 *R/translate.R
 e2ecad9b9b9847f49a8f0b57076c8466 *R/tunable.R
 add112be99497ca9c0f8e51427884fa6 *R/tune_args.R
-a0876ec8887ade1f8a705b4ed0deffb4 *R/tune_cluster.R
+6bec8d660af8e7e1d3a1d8c5a091decf *R/tune_cluster.R
 a7dcbef8138f921bc158db90098859bd *R/tune_helpers.R
 307ebbdcc8612998df0a86eac002c2be *R/update.R
 7ba642d39d85432f0e77831b30f7904d *R/zzz.R
@@ -100,7 +101,7 @@ b2de8b883f9760c7bfd5fdcd21f8b470 *man/tidyclust_update.Rd
 19259e800540f86a434336b1d9303001 *tests/testthat/_snaps/hier_clust.md
 cc0e648d676b38686e95e9ecaaa29e39 *tests/testthat/_snaps/k_means.md
 9c2f6afec391dfc4c6f35082bf61ce88 *tests/testthat/_snaps/reconcile_clusterings.md
-cda2c3d51ecf6bc1f54c70068142051d *tests/testthat/_snaps/tune_cluster.md
+c9db27bf1b1ab187727b99750b12d1b5 *tests/testthat/_snaps/tune_cluster.md
 5e30a7ba8f9a48de6dd381520baa26f8 *tests/testthat/helper-tidyclust-package.R
 209f113b40484579adf95b315964051c *tests/testthat/test-arguments.R
 b05f158443bad902b88bf09738be2bd4 *tests/testthat/test-augment.R
@@ -112,6 +113,7 @@ dcbaa5b2209e93ca62cc1391e1971554 *tests/testthat/test-engines.R
 850bb2a1059f44460b65b3f3ffb166e7 *tests/testthat/test-hier_clust.R
 fed4edc869bb914e4c5cf16da939a72f *tests/testthat/test-k_means.R
 d724bf7c209d2eed464ff7419817f336 *tests/testthat/test-k_means_diagnostics.R
+6bdb48eb390165f63fb41c145078ffd8 *tests/testthat/test-metric-silhouette.R
 0c03426b005ca0597335228c867aad40 *tests/testthat/test-predict_formats.R
 3fa38d28b64f0093696c226f04614980 *tests/testthat/test-reconcile_clusterings.R
 d9116d407b19c18c79641eeb558a6af4 *tests/testthat/test-tune_cluster.R

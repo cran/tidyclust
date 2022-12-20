@@ -25,7 +25,7 @@ extract_cluster_assignment.cluster_fit <- function(object, ...) {
 
 #' @export
 extract_cluster_assignment.workflow <- function(object, ...) {
-  extract_cluster_assignment(object$fit$fit$fit)
+  extract_cluster_assignment(object$fit$fit$fit, ...)
 }
 
 #' @export
@@ -62,7 +62,7 @@ cluster_assignment_tibble <- function(clusters,
                                       n_clusters,
                                       ...,
                                       prefix = "Cluster_") {
-  reorder_clusts <- order(unique(clusters))
+  reorder_clusts <- order(union(unique(clusters), seq_len(n_clusters)))
   names <- paste0(prefix, seq_len(n_clusters))
   res <- names[reorder_clusts][clusters]
 
