@@ -1,10 +1,12 @@
+# https://github.com/tidymodels/parsnip/blob/main/R/augment.R
+
 #' Augment data with predictions
 #'
 #' `augment()` will add column(s) for predictions to the given data.
 #'
 #' For partition models, a `.pred_cluster` column is added.
 #'
-#' @param x A `cluster_fit` object produced by [fit.cluster_spec()] or
+#' @param x A [`cluster_fit`] object produced by [fit.cluster_spec()] or
 #'   [fit_xy.cluster_spec()] .
 #' @param new_data A data frame or matrix.
 #' @param ... Not currently used.

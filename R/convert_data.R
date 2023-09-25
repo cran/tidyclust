@@ -1,3 +1,5 @@
+# https://github.com/tidymodels/parsnip/blob/main/R/convert_data.R
+
 #' Helper functions to convert between formula and matrix interface
 #'
 #' @description Functions to take a formula interface and get the resulting
@@ -72,6 +74,9 @@
     # this still ignores -vars in formula
     x <- model.frame(mod_terms, data)
     y_cols <- attr(mod_terms, "response")
+    if (identical(y_cols, 0L)) {
+      y_cols <- NULL
+    }
     if (length(y_cols) > 0) {
       x <- x[, -y_cols, drop = FALSE]
     }
@@ -203,7 +208,7 @@ make_formula <- function(x, short = TRUE) {
   as.formula(form_text)
 }
 
-#' @param object An object of class `cluster_fit`.
+#' @param object An object of class [`cluster_fit`].
 #' @inheritParams predict.cluster_fit
 #' @rdname convert_helpers
 #' @keywords internal

@@ -85,14 +85,14 @@ test_that("extract_centroids work", {
   ref_res <- kmeans(mtcars, 4)
 
   ref_centroids <- dplyr::bind_cols(
-    .cluster = c(1L, 3L, 4L, 2L),
+    .cluster = c(1L, 4L, 2L, 3L),
     ref_res$centers
   ) %>%
-    dplyr::arrange(.cluster)
+    dplyr::arrange(.cluster) %>%
+    dplyr::select(-.cluster)
 
   expect_identical(
-    extract_centroids(kmeans_fit) %>%
-      dplyr::mutate(.cluster = as.integer(.cluster)),
+    extract_centroids(kmeans_fit) %>% dplyr::select(-.cluster),
     ref_centroids
   )
 })
@@ -117,5 +117,65 @@ test_that("updating", {
   expect_snapshot(
     k_means(num_clusters = 5) %>%
       update(num_clusters = tune())
+  )
+})
+
+test_that("Engine-specific arguments are passed to ClusterR models", {
+  spec <- k_means(num_clusters = 2) %>%
+    set_engine("ClusterR", fuzzy = FALSE)
+
+  fit <- fit(spec, ~., data = mtcars)
+  expect_true(is.null(fit$fit$fuzzy_clusters))
+
+  spec <- k_means(num_clusters = 2) %>%
+    set_engine("ClusterR", fuzzy = TRUE)
+
+  fit <- fit(spec, ~., data = mtcars)
+  expect_false(is.null(fit$fit$fuzzy_clusters))
+})
+
+test_that("reordering is done correctly for stats k_means", {
+  set.seed(42)
+
+  kmeans_fit <- k_means(num_clusters = 6) %>%
+    set_engine("stats") %>%
+    fit(~., data = mtcars)
+
+  summ <- extract_fit_summary(kmeans_fit)
+
+  expect_identical(
+    summ$n_members,
+    unname(as.integer(table(summ$cluster_assignments)))
+  )
+})
+
+test_that("reordering is done correctly for ClusterR k_means", {
+  set.seed(42)
+
+  kmeans_fit <- k_means(num_clusters = 6) %>%
+    set_engine("ClusterR") %>%
+    fit(~., data = mtcars)
+
+  summ <- extract_fit_summary(kmeans_fit)
+
+  expect_identical(
+    summ$n_members,
+    unname(as.integer(table(summ$cluster_assignments)))
+    )
+})
+
+test_that("errors if `num_clust` isn't specified", {
+  expect_snapshot(
+    error = TRUE,
+    k_means() %>%
+      set_engine("stats") %>%
+      fit(~ ., data = mtcars)
+  )
+
+  expect_snapshot(
+    error = TRUE,
+    k_means() %>%
+      set_engine("ClusterR") %>%
+      fit(~ ., data = mtcars)
   )
 })

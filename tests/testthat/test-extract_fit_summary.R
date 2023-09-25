@@ -54,3 +54,23 @@ test_that("extract summary works for hier_clust", {
   expect_true(is.factor(summ1$cluster_names))
   expect_true(is.factor(summ1$cluster_assignments))
 })
+
+test_that("extract_fit_summary() errors for cluster spec", {
+  spec <- tidyclust::k_means(num_clusters = 4)
+
+  expect_snapshot(
+    error = TRUE,
+    extract_fit_summary(spec)
+  )
+})
+
+test_that("prefix is passed in extract_fit_summary()", {
+  spec <- tidyclust::k_means(num_clusters = 4) %>%
+    fit(~ ., data = mtcars)
+
+  res <- extract_fit_summary(spec, prefix = "C_")
+
+  expect_true(
+    all(substr(res$.cluster, 1, 2) == "C_")
+  )
+})

@@ -1,10 +1,13 @@
+# https://github.com/tidymodels/parsnip/blob/main/R/tunable.R
+
 #' @export
 tunable.cluster_spec <- function(x, ...) {
   mod_env <- rlang::ns_env("modelenv")$modelenv
 
   if (is.null(x$engine)) {
     rlang::abort(
-      "Please declare an engine first using `set_engine()`.", call. = FALSE
+      "Please declare an engine first using `set_engine()`.",
+      call. = FALSE
     )
   }
 

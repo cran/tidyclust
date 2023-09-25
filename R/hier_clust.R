@@ -5,6 +5,12 @@
 #' `hier_clust()` defines a model that fits clusters based on a distance-based
 #' dendrogram
 #'
+#' There are different ways to fit this model, and the method of estimation is
+#' chosen by setting the model engine. The engine-specific pages for this model
+#' are listed below.
+#'
+#' - \link[=details_hier_clust_stats]{stats}
+#'
 #' @param mode A single character string for the type of model. The only
 #'   possible value for this model is "partition".
 #' @param engine A single character string specifying what computational engine
@@ -17,6 +23,29 @@
 #'   unambiguous abbreviation of) one of `"ward.D"`, `"ward.D2"`, `"single"`,
 #'   `"complete"`, `"average"` (= UPGMA), `"mcquitty"` (= WPGMA), `"median"` (=
 #'   WPGMC) or `"centroid"` (= UPGMC).
+#'
+#' @details
+#'
+#' ## What does it mean to predict?
+#'
+#' To predict the cluster assignment for a new observation, we find the closest
+#' cluster. How we measure “closeness” is dependent on the specified type of
+#' linkage in the model:
+#'
+#' - *single linkage*: The new observation is assigned to the same cluster as
+#'   its nearest observation from the training data.
+#' - *complete linkage*: The new observation is assigned to the cluster with the
+#'   smallest maximum distances between training observations and the new
+#'   observation.
+#' - *average linkage*: The new observation is assigned to the cluster with the
+#'   smallest average distances between training observations and the new
+#'   observation.
+#' - *centroid method*: The new observation is assigned to the cluster with the
+#'   closest centroid, as in prediction for k_means.
+#' - *Ward’s method*: The new observation is assigned to the cluster with the
+#'   smallest increase in **error sum of squares (ESS)** due to the new
+#'   addition. The ESS is computed as the sum of squared distances between
+#'   observations in a cluster, and the centroid of the cluster.
 #'
 #' @return A `hier_clust` cluster specification.
 #'
@@ -73,7 +102,8 @@ update.hier_clust <- function(object,
                               linkage_method = NULL,
                               fresh = FALSE, ...) {
   eng_args <- parsnip::update_engine_parameters(
-    object$eng_args, fresh = fresh, ...
+    object$eng_args,
+    fresh = fresh, ...
   )
 
   if (!is.null(parameters)) {
@@ -141,7 +171,7 @@ translate_tidyclust.hier_clust <- function(x, engine = x$engine, ...) {
 #'
 #' @param x matrix or data frame
 #' @param num_clusters the number of clusters
-#' @param h the height to cut the dendrogram
+#' @param cut_height the height to cut the dendrogram
 #' @param linkage_method the agglomeration method to be used. This should be (an
 #'   unambiguous abbreviation of) one of `"ward.D"`, `"ward.D2"`, `"single"`,
 #'   `"complete"`, `"average"` (= UPGMA), `"mcquitty"` (= WPGMA), `"median"` (=
@@ -151,9 +181,11 @@ translate_tidyclust.hier_clust <- function(x, engine = x$engine, ...) {
 #' @return A dendrogram
 #' @keywords internal
 #' @export
-hclust_fit <- function(x, num_clusters = NULL, cut_height = NULL,
-                       linkage_method = NULL,
-                       dist_fun = Rfast::Dist) {
+.hier_clust_fit_stats <- function(x,
+                                  num_clusters = NULL,
+                                  cut_height = NULL,
+                                  linkage_method = NULL,
+                                  dist_fun = Rfast::Dist) {
   dmat <- dist_fun(x)
   res <- stats::hclust(stats::as.dist(dmat), method = linkage_method)
   attr(res, "num_clusters") <- num_clusters

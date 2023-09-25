@@ -21,7 +21,26 @@ A \code{k_means} cluster specification.
 }
 \description{
 \code{k_means()} defines a model that fits clusters based on distances to a number
-of centers.
+of centers. This definition doesn't just include K-means, but includes
+models like K-prototypes.
+
+There are different ways to fit this model, and the method of estimation is
+chosen by setting the model engine. The engine-specific pages for this model
+are listed below.
+\itemize{
+\item \link[=details_k_means_stats]{stats}: Classical K-means
+\item \link[=details_k_means_ClusterR]{ClusterR}: Classical K-means
+\item \link[=details_k_means_klaR]{klaR}: K-Modes
+\item \link[=details_k_means_clustMixType]{clustMixType}: K-prototypes
+}
+}
+\details{
+\subsection{What does it mean to predict?}{
+
+For a K-means model, each cluster is defined by a location in the predictor
+space. Therefore, prediction in tidyclust is defined by calculating which
+cluster centroid an observation is closest too.
+}
 }
 \examples{
 # Show all engines

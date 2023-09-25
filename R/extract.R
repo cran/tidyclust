@@ -1,3 +1,5 @@
+# https://github.com/tidymodels/parsnip/blob/main/R/extract.R
+
 #' Extract elements of a tidyclust model object
 #'
 #' @description
@@ -10,17 +12,18 @@
 #'
 #' - `extract_parameter_set_dials()` returns a set of dials parameter objects.
 #'
-#' @param x A `cluster_fit` object or a `cluster_spec` object.
+#' @param x A [`cluster_fit`] object or a [`cluster_spec`] object.
 #' @param ... Not currently used.
 #' @details
 #' Extracting the underlying engine fit can be helpful for describing the
 #'  model (via `print()`, `summary()`, `plot()`, etc.) or for variable
 #'  importance/explainers.
 #'
-#'  However, users should not invoke the `predict()` method on an extracted
-#'  model. There may be preprocessing operations that `tidyclust` has executed
-#'  on the data prior to giving it to the model. Bypassing these can lead to
-#'  errors or silently generating incorrect predictions.
+#'  However, users should not invoke the
+#'  \code{\link[=predict.cluster_fit]{predict()}} method on an extracted model.
+#'  There may be preprocessing operations that `tidyclust` has executed on the
+#'  data prior to giving it to the model. Bypassing these can lead to errors or
+#'  silently generating incorrect predictions.
 #'
 #' **Good**:
 #' ```r
@@ -38,15 +41,14 @@
 #' @name extract-tidyclust
 #' @examples
 #' kmeans_spec <- k_means(num_clusters = 2)
-#' kmeans_fit <- fit(kmeans_spec, ~ ., data = mtcars)
+#' kmeans_fit <- fit(kmeans_spec, ~., data = mtcars)
 #'
 #' extract_fit_engine(kmeans_fit)
 NULL
 
-
 #' @rdname extract-tidyclust
 #' @export
-extract_fit_engine.cluster_fit <- function (x, ...) {
+extract_fit_engine.cluster_fit <- function(x, ...) {
   if (any(names(x) == "fit")) {
     return(x$fit)
   }
