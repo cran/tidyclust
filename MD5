@@ -1,7 +1,7 @@
-632aaa3cb683f83e75bbb96eeb25f519 *DESCRIPTION
+2ec5da6709fb9513beef7aec13c352ac *DESCRIPTION
 5edb5fef5b887a3d455665bb1fc2c0a8 *LICENSE
 185f08c377b2ee190887be34089aa3e8 *NAMESPACE
-6e1a29549106e406a248ea88d8860076 *NEWS.md
+1e175e66e74d7e226356d59abba38f9a *NEWS.md
 537152c7bf8a2c2dcc8e108d424a03a6 *R/aaa.R
 574fd24ebaa0a05c8d80683fad373aab *R/append.R
 13abee54c906e642a05f4473ff690a50 *R/arguments.R
@@ -31,7 +31,7 @@ cf2ab939a7ef6c1e340d9b8f96e621df *R/k_means.R
 6519b9ffaae2bb63006dda551acc7a4d *R/k_means_klaR.R
 e40dbd55cedc05b72d98697a4e8093e0 *R/k_means_stats.R
 175d27321bf9a00acf02203b0e4d7e43 *R/load_ns.R
-fd01e4e666d84c7fd49b15824bfc65f3 *R/metric-aaa.R
+817bafe5a98a055a7fe50e418cba16df *R/metric-aaa.R
 1c556c38b8e26f7393d862de8d5698d2 *R/metric-helpers.R
 83b424609a6a72f1cd2d5abc4ab56612 *R/metric-silhouette.R
 c01cd19f5c37dd4df10885de3b5af694 *R/metric-sse.R
@@ -52,11 +52,11 @@ beb0131138a5f809032bb3a802a89522 *R/tidy.R
 05fa52e1f82b4e5993a1024cfa164e6d *R/translate.R
 3924d9ac4087d5c9d510b4e0437f53cd *R/tunable.R
 8d8d957629ab6d0c04fbb2a1412bb76b *R/tune_args.R
-96c4454fc74c9335cc48cb9f7d2eb20b *R/tune_cluster.R
+85d866901743eb931fcaeb8cfe089d8f *R/tune_cluster.R
 6d84c224f4d0202743ae27fcc0e1ea93 *R/tune_helpers.R
 307ebbdcc8612998df0a86eac002c2be *R/update.R
 6560e231bffaa2053354629f82be082b *R/zzz.R
-6642f34479a6230f794ad55163881d00 *README.md
+bdd86ac8965e11067a5db1df70a470d9 *README.md
 d8bca895774c76c50d24bf275da1246f *inst/README-DOCS.md
 f8222bdccb8887c63ff9da3e1535b893 *man/augment.Rd
 a403e7baab07e06fb6bfa469b5a1f4c1 *man/cluster_fit.Rd
