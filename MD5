@@ -1,7 +1,7 @@
-2ec5da6709fb9513beef7aec13c352ac *DESCRIPTION
+adf482137b5ec5c056af4203e0d688da *DESCRIPTION
 5edb5fef5b887a3d455665bb1fc2c0a8 *LICENSE
 185f08c377b2ee190887be34089aa3e8 *NAMESPACE
-1e175e66e74d7e226356d59abba38f9a *NEWS.md
+44276012e174ce4ac0c874b852832bcf *NEWS.md
 537152c7bf8a2c2dcc8e108d424a03a6 *R/aaa.R
 574fd24ebaa0a05c8d80683fad373aab *R/append.R
 13abee54c906e642a05f4473ff690a50 *R/arguments.R
@@ -56,7 +56,7 @@ beb0131138a5f809032bb3a802a89522 *R/tidy.R
 6d84c224f4d0202743ae27fcc0e1ea93 *R/tune_helpers.R
 307ebbdcc8612998df0a86eac002c2be *R/update.R
 6560e231bffaa2053354629f82be082b *R/zzz.R
-bdd86ac8965e11067a5db1df70a470d9 *README.md
+cc05f4f5e56ee5625a524113c89eb9cd *README.md
 d8bca895774c76c50d24bf275da1246f *inst/README-DOCS.md
 f8222bdccb8887c63ff9da3e1535b893 *man/augment.Rd
 a403e7baab07e06fb6bfa469b5a1f4c1 *man/cluster_fit.Rd
@@ -145,7 +145,7 @@ a7446be18aff111c7836d547dc28fb1d *tests/testthat/_snaps/metric-silhouette.md
 2d0fa5d260118cdf2c7c51447e13a94f *tests/testthat/_snaps/metric-sse.md
 3730742fa2fc9a367cea84c88419cf32 *tests/testthat/_snaps/predict.md
 9c2f6afec391dfc4c6f35082bf61ce88 *tests/testthat/_snaps/reconcile_clusterings.md
-c9db27bf1b1ab187727b99750b12d1b5 *tests/testthat/_snaps/tune_cluster.md
+2bd34429cae6c80535fb3afea50b27c1 *tests/testthat/_snaps/tune_cluster.md
 699f2efa05cb80f330658423aed00b48 *tests/testthat/_snaps/workflows.md
 5e30a7ba8f9a48de6dd381520baa26f8 *tests/testthat/helper-tidyclust-package.R
 6db25c102866d2faf2fb38d1b4047868 *tests/testthat/test-arguments.R
@@ -164,7 +164,7 @@ dbfedbec73548d311cb68549b3ddd3d7 *tests/testthat/test-k_means-clusterR.R
 c0787c2093f5d4f68c8c9a6adb2fc758 *tests/testthat/test-k_means-klaR.R
 6aca91bd56f981eb96467f85dd17fcf2 *tests/testthat/test-k_means-stats.R
 c3bba861ad2b567d9db961ee3581dfc3 *tests/testthat/test-k_means.R
-e9b4fe9a5c50e34687a9f4d2cee4dab0 *tests/testthat/test-k_means_diagnostics.R
+1f65a5693f3eaae41257d2b4bb5d4870 *tests/testthat/test-k_means_diagnostics.R
 6a6616a913ff7b077432d685fb7ce6ed *tests/testthat/test-metric-silhouette.R
 181cf13addfc45f3d0ec7fe69de5a11e *tests/testthat/test-metric-sse.R
 7c83e271b2700216860d13267317cf7a *tests/testthat/test-predict.R

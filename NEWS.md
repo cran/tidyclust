@@ -1,3 +1,7 @@
+# tidyclust 0.2.2
+
+* Update to fix revdep issue for ClusterR. (#186)
+
 # tidyclust 0.2.1
 
 * Small change to let tune package have easy CRAN release. (#178)
