@@ -1,6 +1,6 @@
 Package: tidyclust
 Title: A Common API to Clustering
-Version: 0.2.2
+Version: 0.2.3
 Authors@R: c(
     person("Emil", "Hvitfeldt", , "emil.hvitfeldt@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0679-1945")),
@@ -28,12 +28,12 @@ Config/Needs/website: pkgdown, tidymodels, tidyverse, palmerpenguins,
         patchwork, ggforce, tidyverse/tidytemplate
 Config/testthat/edition: 3
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 NeedsCompilation: no
-Packaged: 2024-06-17 17:07:16 UTC; emilhvitfeldt
+Packaged: 2024-07-02 22:21:58 UTC; emilhvitfeldt
 Author: Emil Hvitfeldt [aut, cre] (<https://orcid.org/0000-0002-0679-1945>),
   Kelly Bodwin [aut],
   Posit Software, PBC [cph, fnd]
 Maintainer: Emil Hvitfeldt <emil.hvitfeldt@posit.co>
 Repository: CRAN
-Date/Publication: 2024-06-17 17:20:02 UTC
+Date/Publication: 2024-07-02 22:40:02 UTC

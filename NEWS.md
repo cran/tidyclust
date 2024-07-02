@@ -1,3 +1,7 @@
+# tidyclust 0.2.3
+
+* Update to fix revdep issue for clustMixType. (#190)
+
 # tidyclust 0.2.2
 
 * Update to fix revdep issue for ClusterR. (#186)

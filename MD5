@@ -1,7 +1,7 @@
-adf482137b5ec5c056af4203e0d688da *DESCRIPTION
+449a95a51586cf1bb3cccaf505a60b47 *DESCRIPTION
 5edb5fef5b887a3d455665bb1fc2c0a8 *LICENSE
-185f08c377b2ee190887be34089aa3e8 *NAMESPACE
-44276012e174ce4ac0c874b852832bcf *NEWS.md
+2b8e5570787191cee88ed006aa962de7 *NAMESPACE
+c73d7c2e04ac885cf3805b29fe3151f8 *NEWS.md
 537152c7bf8a2c2dcc8e108d424a03a6 *R/aaa.R
 574fd24ebaa0a05c8d80683fad373aab *R/append.R
 13abee54c906e642a05f4473ff690a50 *R/arguments.R
@@ -21,10 +21,10 @@ c25e77c339b87e93e6c3c9b020d06f76 *R/extract_parameter_set_dials.R
 f9a8e91572dcaa172e821f42274fdae8 *R/finalize.R
 ba983ce9f1b432ccaa46f5be36290c34 *R/fit.R
 b1a4ca3a3c594f76b0b913e06cfca715 *R/fit_helpers.R
-2e1feacaa028a286a15c387e7ecb5828 *R/hier_clust.R
+7a1e08cc799376f83a9aaa64a29358f7 *R/hier_clust.R
 073ef98aeba3e38b83978644dc760e50 *R/hier_clust_data.R
 b6cf31589fb51f5c0f419d06009af907 *R/hier_clust_stats.R
-cf2ab939a7ef6c1e340d9b8f96e621df *R/k_means.R
+acf389653ad005802469c79e05efb5d7 *R/k_means.R
 18fe28c160e3a306d0570dc2b5bf5607 *R/k_means_ClusterR.R
 610d5ac6148d19d981f617a24c4298e5 *R/k_means_clustMixType.R
 753d172f5a7dd491c49aa97d06d78d7d *R/k_means_data.R
@@ -35,7 +35,7 @@ e40dbd55cedc05b72d98697a4e8093e0 *R/k_means_stats.R
 1c556c38b8e26f7393d862de8d5698d2 *R/metric-helpers.R
 83b424609a6a72f1cd2d5abc4ab56612 *R/metric-silhouette.R
 c01cd19f5c37dd4df10885de3b5af694 *R/metric-sse.R
-1edc3397e23f2155356579ced0ecd012 *R/misc.R
+ec5d87d4db89a6dd67701f7013fce1dd *R/misc.R
 dc6889fc39f38251948ef76ebf9c638b *R/model_object_docs.R
 8979a9fc2b25ffc078cd0e391c39a6af *R/predict.R
 ed6f68a428eb28ae4bae46e6a13ad6ee *R/predict_cluster.R
@@ -45,7 +45,7 @@ cdcb2713a3c09e30119a26b159e4e393 *R/predict_raw.R
 746b6634848bf8e66ffd9e537d64be2e *R/pull.R
 878bdf222e1126d318ebad7c72ce9c15 *R/reconcile_clusterings.R
 abfc4f948aec7fa7b69af157cc866276 *R/reexports.R
-81a144a807795801d9eb3578cabe0225 *R/required_pkgs.R
+babbd6f5125b2c94ab8162633092a5c7 *R/required_pkgs.R
 03d21fd49ada2cfced25a45156c1c624 *R/symbol.R
 beb0131138a5f809032bb3a802a89522 *R/tidy.R
 422f90d994f7af55344b9a9daddd3b3f *R/tidyclust-package.R
@@ -53,10 +53,10 @@ beb0131138a5f809032bb3a802a89522 *R/tidy.R
 3924d9ac4087d5c9d510b4e0437f53cd *R/tunable.R
 8d8d957629ab6d0c04fbb2a1412bb76b *R/tune_args.R
 85d866901743eb931fcaeb8cfe089d8f *R/tune_cluster.R
-6d84c224f4d0202743ae27fcc0e1ea93 *R/tune_helpers.R
+2b05d2d38e716283e6374cdeb7c813c3 *R/tune_helpers.R
 307ebbdcc8612998df0a86eac002c2be *R/update.R
 6560e231bffaa2053354629f82be082b *R/zzz.R
-cc05f4f5e56ee5625a524113c89eb9cd *README.md
+6ad00bf8c30fd7e14cc8d66c8835e2aa *README.md
 d8bca895774c76c50d24bf275da1246f *inst/README-DOCS.md
 f8222bdccb8887c63ff9da3e1535b893 *man/augment.Rd
 a403e7baab07e06fb6bfa469b5a1f4c1 *man/cluster_fit.Rd
@@ -64,7 +64,7 @@ d150612b961d3cd2701c979aa44a28e0 *man/cluster_metric_set.Rd
 2e97f35e7be2513c9e48f9b08c03ec1f *man/cluster_spec.Rd
 532e0757974a41778dd87d94fb53be3e *man/control_cluster.Rd
 2b3f032bbdb1dca4885bfe456c9d6ca2 *man/convert_helpers.Rd
-5f5a910fc52bb2111c4290ca039b0aab *man/cut_height.Rd
+cfbc38b07208eb49b2a694f1202c0971 *man/cut_height.Rd
 284275261b9b11c1d7a8a51a16e3c00d *man/details_hier_clust_stats.Rd
 ec886f25f57ce06f226aff4fe3e762a6 *man/details_k_means_ClusterR.Rd
 59b19fe6e8bda9616b68749a0c78570f *man/details_k_means_clustMixType.Rd
@@ -72,7 +72,7 @@ ec886f25f57ce06f226aff4fe3e762a6 *man/details_k_means_ClusterR.Rd
 ecbfa7bf245489a3fc1cb19133aa4b57 *man/details_k_means_stats.Rd
 0c770808f148f0db050449e22cea4347 *man/dot-hier_clust_fit_stats.Rd
 c5eb20a6bfa839e95cc7574f01716e7a *man/dot-k_means_fit_ClusterR.Rd
-a4ea3a746fd3db1da8e00608af2f32d9 *man/dot-k_means_fit_clustMixType.Rd
+0fb4ced389fe32f34ab074ac817308f0 *man/dot-k_means_fit_clustMixType.Rd
 687de8649f8b451efca7a5352167433a *man/dot-k_means_fit_klaR.Rd
 fa9e20f1ac1dfeb893d3ccbae50c2e20 *man/dot-k_means_fit_stats.Rd
 294596767a2792fa74a0839717e7a404 *man/empty_ellipses.Rd
@@ -159,7 +159,7 @@ dcbaa5b2209e93ca62cc1391e1971554 *tests/testthat/test-engines.R
 42af240f46d632ba606bf5925918e386 *tests/testthat/test-fiting.R
 536e292c840e84fecd1c7645b9c8c208 *tests/testthat/test-hier_clust-stats.R
 f55c0504eead9ccdb820daf07434b544 *tests/testthat/test-hier_clust.R
-0b7c249f6df07bebefddcc0e53a9e04c *tests/testthat/test-k_means-clustMixType.R
+202bcef9b30071cdd3db1f25726c4f45 *tests/testthat/test-k_means-clustMixType.R
 dbfedbec73548d311cb68549b3ddd3d7 *tests/testthat/test-k_means-clusterR.R
 c0787c2093f5d4f68c8c9a6adb2fc758 *tests/testthat/test-k_means-klaR.R
 6aca91bd56f981eb96467f85dd17fcf2 *tests/testthat/test-k_means-stats.R
