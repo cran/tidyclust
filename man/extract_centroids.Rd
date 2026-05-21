@@ -10,7 +10,9 @@ extract_centroids(object, ...)
 \item{object}{An fitted \code{\link{cluster_spec}} object.}
 
 \item{...}{Other arguments passed to methods. Using the \code{prefix} allows you
-to change the prefix in the levels of the factor levels.}
+to change the prefix in the levels of the factor levels. Using \code{labels}
+allows you to provide a character vector of cluster labels, overriding
+\code{prefix}.}
 }
 \value{
 A \code{tibble::tibble()} with 1 row for each centroid and their position.
@@ -54,28 +56,31 @@ observation belongs to
 }
 \examples{
 set.seed(1234)
-kmeans_spec <- k_means(num_clusters = 5) \%>\%
+kmeans_spec <- k_means(num_clusters = 5) |>
   set_engine("stats")
 
 kmeans_fit <- fit(kmeans_spec, ~., mtcars)
 
-kmeans_fit \%>\%
+kmeans_fit |>
   extract_centroids()
+
+kmeans_fit |>
+  extract_centroids(labels = c("A", "B", "C", "D", "E"))
 
 # Some models such as `hier_clust()` fits in such a way that you can specify
 # the number of clusters after the model is fit.
 # A Hierarchical (Agglomerative) Clustering method doesn't technically have
 # clusters, so the center of the observation within each cluster is returned
 # instead.
-hclust_spec <- hier_clust() \%>\%
+hclust_spec <- hier_clust() |>
   set_engine("stats")
 
 hclust_fit <- fit(hclust_spec, ~., mtcars)
 
-hclust_fit \%>\%
+hclust_fit |>
   extract_centroids(num_clusters = 2)
 
-hclust_fit \%>\%
+hclust_fit |>
   extract_centroids(cut_height = 250)
 }
 \seealso{

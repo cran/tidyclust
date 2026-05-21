@@ -1,5 +1,12 @@
 # https://github.com/tidymodels/parsnip/blob/main/R/tunable.R
 
+#' Get tunable parameters for a cluster specification
+#'
+#' @inheritParams generics::tunable
+#' @return A tibble with columns `name`, `call_info`, `source`, `component`,
+#'   and `component_id` describing each tunable parameter.
+#' @rdname tunable.cluster_spec
+#' @keywords internal
 #' @export
 tunable.cluster_spec <- function(x, ...) {
   mod_env <- rlang::ns_env("modelenv")$modelenv
@@ -20,18 +27,18 @@ tunable.cluster_spec <- function(x, ...) {
   }
 
   arg_vals <-
-    mod_env[[arg_name]] %>%
-      dplyr::filter(engine == x$engine) %>%
-      dplyr::select(name = exposed, call_info = func) %>%
-      dplyr::full_join(
-        tibble::tibble(name = c(names(x$args), names(x$eng_args))),
-        by = "name"
-      ) %>%
-      dplyr::mutate(
-        source = "cluster_spec",
-        component = mod_type(x),
-        component_id = dplyr::if_else(name %in% names(x$args), "main", "engine")
-      )
+    mod_env[[arg_name]] |>
+    dplyr::filter(engine == x$engine) |>
+    dplyr::select(name = exposed, call_info = func) |>
+    dplyr::full_join(
+      tibble::tibble(name = c(names(x$args), names(x$eng_args))),
+      by = "name"
+    ) |>
+    dplyr::mutate(
+      source = "cluster_spec",
+      component = mod_type(x),
+      component_id = dplyr::if_else(name %in% names(x$args), "main", "engine")
+    )
 
   if (nrow(arg_vals) > 0) {
     has_info <- map_lgl(arg_vals$call_info, is.null)
@@ -39,7 +46,7 @@ tunable.cluster_spec <- function(x, ...) {
 
     arg_vals <- arg_vals[rm_list, ]
   }
-  arg_vals %>% dplyr::select(name, call_info, source, component, component_id)
+  arg_vals |> dplyr::select(name, call_info, source, component, component_id)
 }
 
 mod_type <- function(.mod) class(.mod)[class(.mod) != "cluster_spec"][1]
@@ -49,11 +56,19 @@ add_engine_parameters <- function(pset, engines) {
   if (any(is_engine_param)) {
     pset <- pset[!is_engine_param, ]
     pset <-
-      dplyr::bind_rows(pset, engines %>% dplyr::filter(name %in% engines$name))
+      dplyr::bind_rows(pset, engines |> dplyr::filter(name %in% engines$name))
   }
   pset
 }
 
+#' @rdname tunable.cluster_spec
+#' @export
+tunable.hier_clust <- function(x, ...) {
+  res <- NextMethod()
+  res[res$name != "dist_fun", ]
+}
+
+#' @rdname tunable.cluster_spec
 #' @export
 tunable.k_means <- function(x, ...) {
   res <- NextMethod()
@@ -62,6 +77,7 @@ tunable.k_means <- function(x, ...) {
   }
   res
 }
+
 
 stats_k_means_engine_args <-
   tibble::tibble(
@@ -73,5 +89,79 @@ stats_k_means_engine_args <-
     ),
     source = "cluster_spec",
     component = "k_means",
+    component_id = "engine"
+  )
+
+
+#' @rdname tunable.cluster_spec
+#' @export
+tunable.db_clust <- function(x, ...) {
+  res <- NextMethod()
+  if (x$engine == "dbscan") {
+    res <- add_engine_parameters(res, dbscan_db_clust_engine_args)
+  }
+  if (x$engine == "hdbscan") {
+    res <- add_engine_parameters(res, hdbscan_db_clust_engine_args)
+  }
+  res
+}
+
+dbscan_db_clust_engine_args <-
+  tibble::tibble(
+    name = c(
+      "eps",
+      "minPts"
+    ),
+    call_info = list(
+      list(pkg = "tidyclust", fun = "radius"),
+      list(pkg = "tidyclust", fun = "min_points")
+    ),
+    source = "cluster_spec",
+    component = "dbscan",
+    component_id = "engine"
+  )
+
+hdbscan_db_clust_engine_args <-
+  tibble::tibble(
+    name = "min_cluster_size",
+    call_info = list(
+      list(pkg = "tidyclust", fun = "min_points")
+    ),
+    source = "cluster_spec",
+    component = "hdbscan",
+    component_id = "engine"
+  )
+
+
+#' @rdname tunable.cluster_spec
+#' @export
+tunable.gm_clust <- function(x, ...) {
+  res <- NextMethod()
+  if (x$engine == "mclust") {
+    res <- add_engine_parameters(res, mclust_gm_clust_engine_args)
+  }
+  res
+}
+
+mclust_gm_clust_engine_args <-
+  tibble::tibble(
+    name = c(
+      "G",
+      "circular",
+      "zero_covariance",
+      "shared_orientation",
+      "shared_shape",
+      "shared_size"
+    ),
+    call_info = list(
+      list(pkg = "dials", fun = "num_clusters"),
+      list(pkg = "tidyclust", fun = "circular"),
+      list(pkg = "tidyclust", fun = "zero_covariance"),
+      list(pkg = "tidyclust", fun = "shared_orientation"),
+      list(pkg = "tidyclust", fun = "shared_shape"),
+      list(pkg = "tidyclust", fun = "shared_size")
+    ),
+    source = "cluster_spec",
+    component = "mclust",
     component_id = "engine"
   )

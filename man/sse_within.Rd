@@ -18,8 +18,12 @@ sse_within(
 
 \item{new_data}{A dataset to predict on.  If \code{NULL}, uses trained clustering.}
 
-\item{dist_fun}{A function for calculating distances to centroids.  Defaults
-to Euclidean distance on processed data.}
+\item{dist_fun}{A function of the form \verb{function(x, y)} that takes two
+matrices (centroids and observations) and returns a distance matrix.
+Defaults to \code{philentropy::dist_many_many} with Euclidean distance. See
+\code{philentropy::getDistMethods()} for a list of supported methods, and
+\code{vignette("tuning_and_metrics", package = "tidyclust")} for usage
+examples.}
 }
 \value{
 A tibble with two columns, the cluster name and the SSE within that
@@ -33,7 +37,7 @@ Calculates Sum of Squared Error in each cluster
 that returns the sum of the values given by \code{sse_within()}.
 }
 \examples{
-kmeans_spec <- k_means(num_clusters = 5) \%>\%
+kmeans_spec <- k_means(num_clusters = 5) |>
   set_engine("stats")
 
 kmeans_fit <- fit(kmeans_spec, ~., mtcars)

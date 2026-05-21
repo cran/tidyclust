@@ -10,7 +10,7 @@
 # predict() errors for hier_clust() with missing args
 
     Code
-      hclust_fit %>% predict(mtcars)
+      predict(hclust_fit, mtcars)
     Condition
       Error in `predict()`:
       ! Please specify either `num_clusters` or `cut_height`.
@@ -18,7 +18,7 @@
 # predict() errors for hier_clust() with k arg
 
     Code
-      hclust_fit %>% predict(mtcars, k = 3)
+      predict(hclust_fit, mtcars, k = 3)
     Condition
       Error in `predict()`:
       ! Using `k` argument is not supported.
@@ -27,9 +27,50 @@
 # predict() errors for hier_clust() with h arg
 
     Code
-      hclust_fit %>% predict(mtcars, h = 3)
+      predict(hclust_fit, mtcars, h = 3)
     Condition
       Error in `predict()`:
       ! Using `h` argument is not supported.
       i Please use `cut_height` instead.
+
+# labels length mismatch errors in predict()
+
+    Code
+      predict(spec, mtcars, labels = c("A", "B"))
+    Condition
+      Error in `make_cluster_labels()`:
+      ! `labels` must have length 3, not 2.
+
+# duplicate labels errors in predict()
+
+    Code
+      predict(spec, mtcars, labels = c("A", "A", "B"))
+    Condition
+      Error in `make_cluster_labels()`:
+      ! `labels` must not contain duplicate values. Duplicated: "A".
+
+# predict() with type = 'raw' errors when not available
+
+    Code
+      predict(fit, mtcars, type = "raw")
+    Condition
+      Error in `check_spec_pred_type()`:
+      ! No raw prediction method available for this model.
+      i `type` should be one of "cluster".
+
+# predict() errors with NA in new_data
+
+    Code
+      predict(fit, new_data)
+    Condition
+      Error in `flexclust::dist2()`:
+      ! Cannot handle missing values!
+
+# predict() errors with missing required columns
+
+    Code
+      predict(fit, missing_cols)
+    Condition
+      Error:
+      ! object 'wt' not found
 

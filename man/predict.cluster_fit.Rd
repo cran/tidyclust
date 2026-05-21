@@ -22,8 +22,10 @@ value based on the model's mode.}
 that will be used when \code{type = "raw"}. The list should not include options
 for the model object or the new data being predicted.}
 
-\item{...}{Arguments to the underlying model's prediction function cannot be
-passed here (see \code{opts}).}
+\item{...}{Optional arguments passed to the underlying predict function.
+Use \code{prefix} to change the prefix in the cluster factor levels (default:
+\code{"Cluster_"}). Use \code{labels} to supply a character vector of cluster labels,
+which overrides \code{prefix}.}
 }
 \value{
 With the exception of \code{type = "raw"}, the results of
@@ -79,25 +81,25 @@ observation belongs to
 }
 }
 \examples{
-kmeans_spec <- k_means(num_clusters = 5) \%>\%
+kmeans_spec <- k_means(num_clusters = 5) |>
   set_engine("stats")
 
 kmeans_fit <- fit(kmeans_spec, ~., mtcars)
 
-kmeans_fit \%>\%
+kmeans_fit |>
   predict(new_data = mtcars)
 
 # Some models such as `hier_clust()` fits in such a way that you can specify
 # the number of clusters after the model is fit
-hclust_spec <- hier_clust() \%>\%
+hclust_spec <- hier_clust() |>
   set_engine("stats")
 
 hclust_fit <- fit(hclust_spec, ~., mtcars)
 
-hclust_fit \%>\%
+hclust_fit |>
   predict(new_data = mtcars[4:6, ], num_clusters = 2)
 
-hclust_fit \%>\%
+hclust_fit |>
   predict(new_data = mtcars[4:6, ], cut_height = 250)
 }
 \seealso{

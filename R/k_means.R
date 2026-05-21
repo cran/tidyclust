@@ -213,6 +213,7 @@ check_args.k_means <- function(object) {
   res$centroids <- res$centroids[new_order, , drop = FALSE]
   res$WCSS_per_cluster <- res$WCSS_per_cluster[, new_order, drop = FALSE]
   res$obs_per_cluster <- res$obs_per_cluster[, new_order, drop = FALSE]
+  attr(res, "training_data") <- data
   res
 }
 
@@ -235,12 +236,27 @@ check_args.k_means <- function(object) {
     )
   }
 
+  if (length(centers) == 1) {
+    n_distinct <- nrow(unique(data))
+    if (centers > n_distinct) {
+      cli::cli_abort(
+        c(
+          "{.arg num_clusters} must be at most the number of distinct data
+          points ({n_distinct}).",
+          "i" = "{.arg num_clusters} was set to {centers}."
+        ),
+        call = call("fit")
+      )
+    }
+  }
+
   res <- stats::kmeans(data, centers, ...)
   new_order <- unique(res$cluster)
   res$cluster <- set_names(order(new_order)[res$cluster], names(res$cluster))
   res$centers <- res$centers[new_order, , drop = FALSE]
   res$withinss <- res$withinss[new_order]
   res$size <- res$size[new_order]
+  attr(res, "training_data") <- data
   res
 }
 
@@ -265,7 +281,7 @@ check_args.k_means <- function(object) {
           predictors.",
             "x" = "Only numeric predictors where used.",
             "i" = "Try using the `stats` engine with \\
-          {.code mod %>% set_engine(\"stats\")}."
+          {.code mod |> set_engine(\"stats\")}."
           ),
           call = call("fit")
         )
@@ -277,7 +293,7 @@ check_args.k_means <- function(object) {
           predictors.",
             "x" = "Only categorical predictors where used.",
             "i" = "Try using the `klaR` engine with \\
-          {.code mod %>% set_engine(\"klaR\")}."
+          {.code mod |> set_engine(\"klaR\")}."
           ),
           call = call("fit")
         )
@@ -292,6 +308,7 @@ check_args.k_means <- function(object) {
   res$withinss <- res$withinss[new_order]
   res$dists <- res$dists[, new_order, drop = FALSE]
   res$size <- res$size[new_order]
+  attr(res, "training_data") <- x
   res
 }
 
@@ -312,5 +329,6 @@ check_args.k_means <- function(object) {
   res$size <- res$size[new_order]
   res$modes <- res$modes[new_order, , drop = FALSE]
   res$withindiff <- res$withindiff[new_order]
+  attr(res, "training_data") <- data
   res
 }

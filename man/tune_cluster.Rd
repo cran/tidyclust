@@ -57,27 +57,88 @@ parameter sets to be created automatically.}
 An updated version of \code{resamples} with extra list columns for
 \code{.metrics} and \code{.notes} (optional columns are \code{.predictions} and
 \code{.extracts}). \code{.notes} contains warnings and errors that occur during
-execution.
+execution. The \code{.notes} column is a tibble with columns \code{location},
+\code{type}, \code{note}, and \code{trace}. The \code{trace} column contains
+\code{\link[rlang:trace_back]{rlang::trace_back()}} objects for errors and warnings, which can be
+useful for debugging.
 }
 \description{
-\code{\link[=tune_cluster]{tune_cluster()}} computes a set of performance metrics (e.g. accuracy or
-RMSE) for a pre-defined set of tuning parameters that correspond to a model
-or recipe across one or more resamples of the data.
+\code{\link[=tune_cluster]{tune_cluster()}} computes a set of performance metrics for a pre-defined set
+of tuning parameters that correspond to a cluster model or recipe across one
+or more resamples of the data.
 }
+\section{Choosing metrics}{
+
+
+The \code{metrics} argument accepts a \code{\link[=cluster_metric_set]{cluster_metric_set()}}. If \code{NULL}, the
+default metrics are \code{\link[=sse_within_total]{sse_within_total()}} and \code{\link[=sse_total]{sse_total()}}.
+
+Common metrics and their interpretation:
+\itemize{
+\item \code{\link[=sse_within_total]{sse_within_total()}}: Total within-cluster sum of squares. Lower values
+indicate tighter, more compact clusters. Use the "elbow method" — plot
+this against \code{num_clusters} and look for where the improvement flattens.
+\item \code{\link[=sse_ratio]{sse_ratio()}}: Ratio of within-cluster SS to total SS. Lower is better
+(more variance explained by the clustering).
+\item \code{\link[=silhouette_avg]{silhouette_avg()}}: Average silhouette width (range -1 to 1). Higher
+values indicate better-separated clusters. Values above 0.5 are generally
+considered good.
+}
+
+After tuning, use these functions to inspect results:
+\itemize{
+\item \code{\link[tune:collect_predictions]{tune::collect_metrics()}}: All metrics for every parameter combination.
+\item \code{\link[tune:show_best]{tune::show_best()}}: Top N parameter combinations for a given metric.
+\item \code{\link[tune:show_best]{tune::select_best()}}: Single best parameter combination.
+}
+}
+
+\section{Configuration column}{
+
+The \code{.config} column in the results follows the pattern
+\verb{pre\{num\}_mod\{num\}_post\{num\}}. The numbers encode which combination of
+preprocessor, model, and postprocessor parameters was used. A value of
+\code{0} means that element was not tuned. For example, \code{pre0_mod2_post0}
+means the preprocessor was not tuned and this is the second model
+parameter combination.
+}
+
+\section{Parallel processing}{
+
+Parallel processing is supported via the \code{future} and \code{mirai} packages.
+To enable parallelism, set up a \code{future} plan or \code{mirai} daemons before
+calling \code{tune_cluster()}:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{# Using future
+library(future)
+plan(multisession, workers = 4)
+res <- tune_cluster(wflow, resamples = folds, grid = grid)
+plan(sequential)
+
+# Using mirai
+library(mirai)
+daemons(4)
+res <- tune_cluster(wflow, resamples = folds, grid = grid)
+daemons(0)
+}\if{html}{\out{</div>}}
+
+See \link[tune:parallelism]{tune::parallelism} for more details.
+}
+
 \examples{
 library(recipes)
 library(rsample)
 library(workflows)
 library(tune)
 
-rec_spec <- recipe(~., data = mtcars) \%>\%
-  step_normalize(all_numeric_predictors()) \%>\%
+rec_spec <- recipe(~., data = mtcars) |>
+  step_normalize(all_numeric_predictors()) |>
   step_pca(all_numeric_predictors())
 
 kmeans_spec <- k_means(num_clusters = tune())
 
-wflow <- workflow() \%>\%
-  add_recipe(rec_spec) \%>\%
+wflow <- workflow() |>
+  add_recipe(rec_spec) |>
   add_model(kmeans_spec)
 
 grid <- tibble(num_clusters = 1:3)

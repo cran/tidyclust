@@ -9,7 +9,8 @@ hier_clust(
   engine = "stats",
   num_clusters = NULL,
   cut_height = NULL,
-  linkage_method = "complete"
+  linkage_method = "complete",
+  dist_fun = NULL
 )
 }
 \arguments{
@@ -29,9 +30,12 @@ obtain cluster assignments (only used if \code{num_clusters} is \code{NULL})}
 unambiguous abbreviation of) one of \code{"ward.D"}, \code{"ward.D2"}, \code{"single"},
 \code{"complete"}, \code{"average"} (= UPGMA), \code{"mcquitty"} (= WPGMA), \code{"median"} (=
 WPGMC) or \code{"centroid"} (= UPGMC).}
-}
-\value{
-A \code{hier_clust} cluster specification.
+
+\item{dist_fun}{A function for calculating the distance between observations.
+Defaults to \code{philentropy::distance} which supports numerous distance
+metrics via its \code{method} argument. The function should accept a matrix or
+data frame and return a square numeric matrix or an object coercible to one
+via \code{\link[stats:dist]{stats::as.dist()}}. See \code{\link[=silhouette]{silhouette()}} for further details.}
 }
 \description{
 \code{hier_clust()} defines a model that fits clusters based on a distance-based
@@ -61,10 +65,6 @@ smallest average distances between training observations and the new
 observation.
 \item \emph{centroid method}: The new observation is assigned to the cluster with the
 closest centroid, as in prediction for k_means.
-\item \emph{Ward’s method}: The new observation is assigned to the cluster with the
-smallest increase in \strong{error sum of squares (ESS)} due to the new
-addition. The ESS is computed as the sum of squared distances between
-observations in a cluster, and the centroid of the cluster.
 }
 }
 }

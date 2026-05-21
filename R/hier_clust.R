@@ -23,6 +23,11 @@
 #'   unambiguous abbreviation of) one of `"ward.D"`, `"ward.D2"`, `"single"`,
 #'   `"complete"`, `"average"` (= UPGMA), `"mcquitty"` (= WPGMA), `"median"` (=
 #'   WPGMC) or `"centroid"` (= UPGMC).
+#' @param dist_fun A function for calculating the distance between observations.
+#'   Defaults to `philentropy::distance` which supports numerous distance
+#'   metrics via its `method` argument. The function should accept a matrix or
+#'   data frame and return a square numeric matrix or an object coercible to one
+#'   via [stats::as.dist()]. See [silhouette()] for further details.
 #'
 #' @details
 #'
@@ -42,12 +47,21 @@
 #'   observation.
 #' - *centroid method*: The new observation is assigned to the cluster with the
 #'   closest centroid, as in prediction for k_means.
-#' - *Ward’s method*: The new observation is assigned to the cluster with the
-#'   smallest increase in **error sum of squares (ESS)** due to the new
-#'   addition. The ESS is computed as the sum of squared distances between
-#'   observations in a cluster, and the centroid of the cluster.
-#'
-#' @return A `hier_clust` cluster specification.
+#’ - *Ward’s method*: The new observation is assigned to the cluster with the
+#’   smallest increase in **error sum of squares (ESS)** due to the new
+#’   addition. The ESS is computed as the sum of squared distances between
+#’   observations in a cluster, and the centroid of the cluster.
+#’
+#’ Note that these heuristics for assigning new observations to existing
+#’ clusters are approximations. For most linkage methods, the predictions on
+#’ training data may not match the cluster assignments from
+#’ `extract_cluster_assignment()`. This is because `extract_cluster_assignment()`
+#’ uses `cutree()` to cut the fitted dendrogram, which assigns clusters based on
+#’ the dendrogram structure rather than proximity to existing cluster members.
+#’ Observations on the boundary between clusters may therefore be assigned to
+#’ different clusters by the two methods.
+#’
+#’ @return A `hier_clust` cluster specification.
 #'
 #' @examples
 #' # Show all engines
@@ -61,12 +75,14 @@ hier_clust <-
     engine = "stats",
     num_clusters = NULL,
     cut_height = NULL,
-    linkage_method = "complete"
+    linkage_method = "complete",
+    dist_fun = NULL
   ) {
     args <- list(
       num_clusters = enquo(num_clusters),
       cut_height = enquo(cut_height),
-      linkage_method = enquo(linkage_method)
+      linkage_method = enquo(linkage_method),
+      dist_fun = enquo(dist_fun)
     )
 
     new_cluster_spec(
@@ -103,6 +119,7 @@ update.hier_clust <- function(
   num_clusters = NULL,
   cut_height = NULL,
   linkage_method = NULL,
+  dist_fun = NULL,
   fresh = FALSE,
   ...
 ) {
@@ -118,7 +135,8 @@ update.hier_clust <- function(
   args <- list(
     num_clusters = enquo(num_clusters),
     cut_height = enquo(cut_height),
-    linkage_method = enquo(linkage_method)
+    linkage_method = enquo(linkage_method),
+    dist_fun = enquo(dist_fun)
   )
 
   args <- parsnip::update_main_parameters(args, parameters)
@@ -183,7 +201,7 @@ translate_tidyclust.hier_clust <- function(x, engine = x$engine, ...) {
 #'   unambiguous abbreviation of) one of `"ward.D"`, `"ward.D2"`, `"single"`,
 #'   `"complete"`, `"average"` (= UPGMA), `"mcquitty"` (= WPGMA), `"median"` (=
 #'   WPGMC) or `"centroid"` (= UPGMC).
-#' @param dist_fun A distance function to use
+#' @inheritParams silhouette
 #'
 #' @return A dendrogram
 #' @keywords internal

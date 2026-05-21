@@ -2,8 +2,12 @@
 #'
 #' @param object A fitted kmeans tidyclust model
 #' @param new_data A dataset to predict on.  If `NULL`, uses trained clustering.
-#' @param dist_fun A function for calculating distances to centroids.  Defaults
-#'   to Euclidean distance on processed data.
+#' @param dist_fun A function of the form `function(x, y)` that takes two
+#'   matrices (centroids and observations) and returns a distance matrix.
+#'   Defaults to `philentropy::dist_many_many` with Euclidean distance. See
+#'   `philentropy::getDistMethods()` for a list of supported methods, and
+#'   `vignette("tuning_and_metrics", package = "tidyclust")` for usage
+#'   examples.
 #'
 #' @details [sse_within_total()] is the corresponding cluster metric function
 #' that returns the sum of the values given by `sse_within()`.
@@ -12,7 +16,7 @@
 #'   cluster.
 #'
 #' @examples
-#' kmeans_spec <- k_means(num_clusters = 5) %>%
+#' kmeans_spec <- k_means(num_clusters = 5) |>
 #'   set_engine("stats")
 #'
 #' kmeans_fit <- fit(kmeans_spec, ~., mtcars)
@@ -43,6 +47,13 @@ sse_within <- function(
   summ <- extract_fit_summary(object)
 
   if (is.null(new_data)) {
+    training_data <- extract_training_data(object)
+    if (!is.null(training_data)) {
+      new_data <- training_data
+    }
+  }
+
+  if (is.null(new_data)) {
     res <- tibble::tibble(
       .cluster = factor(summ$cluster_names),
       wss = summ$sse_within_total_total,
@@ -56,22 +67,24 @@ sse_within <- function(
       )
     )
 
-    res <- dist_to_centroids %>%
-      tibble::as_tibble(.name_repair = "minimal") %>%
+    res <- dist_to_centroids |>
+      tibble::as_tibble(.name_repair = "minimal") |>
       map(
-        ~c(
-          .cluster = which.min(.x),
-          dist = min(.x)^2
-        )
-      ) %>%
-      dplyr::bind_rows() %>%
+        \(.x) {
+          c(
+            .cluster = which.min(.x),
+            dist = min(.x)^2
+          )
+        }
+      ) |>
+      dplyr::bind_rows() |>
       dplyr::mutate(
         .cluster = factor(paste0("Cluster_", .cluster))
-      ) %>%
-      dplyr::group_by(.cluster) %>%
+      ) |>
+      dplyr::group_by(.cluster) |>
       dplyr::summarize(
         wss = sum(dist),
-        n_obs = dplyr::n()
+        n_members = dplyr::n()
       )
   }
 
@@ -82,8 +95,7 @@ sse_within <- function(
 #'
 #' @param object A fitted kmeans tidyclust model
 #' @param new_data A dataset to predict on.  If `NULL`, uses trained clustering.
-#' @param dist_fun A function for calculating distances to centroids. Defaults
-#'   to Euclidean distance on processed data.
+#' @inheritParams sse_within
 #' @param ... Other arguments passed to methods.
 #'
 #' @details Not to be confused with [sse_within()] that returns a tibble
@@ -94,7 +106,7 @@ sse_within <- function(
 #' @family cluster metric
 #'
 #' @examples
-#' kmeans_spec <- k_means(num_clusters = 5) %>%
+#' kmeans_spec <- k_means(num_clusters = 5) |>
 #'   set_engine("stats")
 #'
 #' kmeans_fit <- fit(kmeans_spec, ~., mtcars)
@@ -178,8 +190,7 @@ sse_within_total_impl <- function(
 #'
 #' @param object A fitted kmeans tidyclust model
 #' @param new_data A dataset to predict on.  If `NULL`, uses trained clustering.
-#' @param dist_fun A function for calculating distances to centroids.  Defaults
-#'   to Euclidean distance on processed data.
+#' @inheritParams sse_within
 #' @param ... Other arguments passed to methods.
 #'
 #' @return A tibble with 3 columns; `.metric`, `.estimator`, and `.estimate`.
@@ -187,7 +198,7 @@ sse_within_total_impl <- function(
 #' @family cluster metric
 #'
 #' @examples
-#' kmeans_spec <- k_means(num_clusters = 5) %>%
+#' kmeans_spec <- k_means(num_clusters = 5) |>
 #'   set_engine("stats")
 #'
 #' kmeans_fit <- fit(kmeans_spec, ~., mtcars)
@@ -277,7 +288,7 @@ sse_total_impl <- function(
     overall_mean <- colSums(summ$centroids * summ$n_members) /
       sum(summ$n_members)
     suppressMessages(
-      tot <- dist_fun(t(as.matrix(overall_mean)), as.matrix(new_data))^2 %>%
+      tot <- dist_fun(t(as.matrix(overall_mean)), as.matrix(new_data))^2 |>
         sum()
     )
   }
@@ -289,8 +300,7 @@ sse_total_impl <- function(
 #'
 #' @param object A fitted kmeans tidyclust model
 #' @param new_data A dataset to predict on.  If `NULL`, uses trained clustering.
-#' @param dist_fun A function for calculating distances to centroids.  Defaults
-#'   to Euclidean distance on processed data.
+#' @inheritParams sse_within
 #' @param ... Other arguments passed to methods.
 #'
 #' @return A tibble with 3 columns; `.metric`, `.estimator`, and `.estimate`.
@@ -298,7 +308,7 @@ sse_total_impl <- function(
 #' @family cluster metric
 #'
 #' @examples
-#' kmeans_spec <- k_means(num_clusters = 5) %>%
+#' kmeans_spec <- k_means(num_clusters = 5) |>
 #'   set_engine("stats")
 #'
 #' kmeans_fit <- fit(kmeans_spec, ~., mtcars)

@@ -10,7 +10,7 @@
 # extract_cluster_assignment() errors for hier_clust() with missing args
 
     Code
-      hclust_fit %>% extract_cluster_assignment()
+      extract_cluster_assignment(hclust_fit)
     Condition
       Error in `extract_cluster_assignment()`:
       ! Please specify either `num_clusters` or `cut_height`.
@@ -18,7 +18,7 @@
 # extract_cluster_assignment() errors for hier_clust() with k arg
 
     Code
-      hclust_fit %>% extract_cluster_assignment(k = 3)
+      extract_cluster_assignment(hclust_fit, k = 3)
     Condition
       Error in `extract_cluster_assignment()`:
       ! Using `k` argument is not supported.
@@ -27,9 +27,25 @@
 # extract_cluster_assignment() errors for hier_clust() with h arg
 
     Code
-      hclust_fit %>% extract_cluster_assignment(h = 3)
+      extract_cluster_assignment(hclust_fit, h = 3)
     Condition
       Error in `extract_cluster_assignment()`:
       ! Using `h` argument is not supported.
       i Please use `cut_height` instead.
+
+# labels length mismatch errors in extract_cluster_assignment()
+
+    Code
+      extract_cluster_assignment(spec, labels = c("A", "B"))
+    Condition
+      Error in `make_cluster_labels()`:
+      ! `labels` must have length 3, not 2.
+
+# duplicate labels errors in extract_cluster_assignment()
+
+    Code
+      extract_cluster_assignment(spec, labels = c("A", "A", "B"))
+    Condition
+      Error in `make_cluster_labels()`:
+      ! `labels` must not contain duplicate values. Duplicated: "A".
 

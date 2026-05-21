@@ -14,10 +14,10 @@ This model has 1 tuning parameters:
 ## Translation from tidyclust to the original package (partition)
 
 
-```r
-hier_clust(num_clusters = integer(1)) %>% 
-  set_engine("stats") %>% 
-  set_mode("partition") %>% 
+``` r
+hier_clust(num_clusters = integer(1)) |> 
+  set_engine("stats") |> 
+  set_mode("partition") |> 
   translate_tidyclust()
 ```
 

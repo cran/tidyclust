@@ -1,6 +1,6 @@
 test_that("fitting", {
   set.seed(1234)
-  spec <- hier_clust(num_clusters = 3) %>%
+  spec <- hier_clust(num_clusters = 3) |>
     set_engine("stats")
 
   expect_no_error(
@@ -14,7 +14,7 @@ test_that("fitting", {
 
 test_that("predicting", {
   set.seed(1234)
-  spec <- hier_clust(num_clusters = 3) %>%
+  spec <- hier_clust(num_clusters = 3) |>
     set_engine("stats")
 
   res <- fit(spec, ~., iris)
@@ -29,7 +29,7 @@ test_that("predicting", {
 
 test_that("all levels are preserved with 1 row predictions", {
   set.seed(1234)
-  spec <- hier_clust(num_clusters = 3) %>%
+  spec <- hier_clust(num_clusters = 3) |>
     set_engine("stats")
 
   res <- fit(spec, ~., mtcars)
@@ -44,7 +44,7 @@ test_that("all levels are preserved with 1 row predictions", {
 
 test_that("extract_centroids() works", {
   set.seed(1234)
-  spec <- hier_clust(num_clusters = 3) %>%
+  spec <- hier_clust(num_clusters = 3) |>
     set_engine("stats")
 
   res <- fit(spec, ~., iris)
@@ -72,7 +72,7 @@ test_that("extract_centroids() works", {
 
 test_that("extract_cluster_assignment() works", {
   set.seed(1234)
-  spec <- hier_clust(num_clusters = 3) %>%
+  spec <- hier_clust(num_clusters = 3) |>
     set_engine("stats")
 
   res <- fit(spec, ~., iris)
@@ -89,4 +89,32 @@ test_that("extract_cluster_assignment() works", {
     clusters,
     expected
   )
+})
+
+test_that("all parameters are correctly named", {
+  # fixes issue #206
+
+  param_grid <- dials::parameters(
+    dials::num_clusters(range = c(2, 3)),
+    linkage_method(),
+    cut_height(range = c(0, 3))
+  )
+
+  expect_setequal(
+    param_grid$name,
+    c("num_clusters", "linkage_method", "cut_height")
+  )
+})
+
+test_that("axe_data does not remove training_data needed for predict", {
+  skip_if_not_installed("butcher")
+
+  h_fit <- hier_clust(num_clusters = 3) |>
+    set_engine("stats") |>
+    fit(~., data = mtcars)
+
+  h_axed <- butcher::axe_data(h_fit)
+
+  expect_false(is.null(attr(h_axed$fit, "training_data")))
+  expect_equal(nrow(predict(h_axed, mtcars)), 32)
 })

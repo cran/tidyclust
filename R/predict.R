@@ -14,8 +14,10 @@
 #' @param opts A list of optional arguments to the underlying predict function
 #'   that will be used when `type = "raw"`. The list should not include options
 #'   for the model object or the new data being predicted.
-#' @param ... Arguments to the underlying model's prediction function cannot be
-#'   passed here (see `opts`).
+#' @param ... Optional arguments passed to the underlying predict function.
+#'   Use `prefix` to change the prefix in the cluster factor levels (default:
+#'   `"Cluster_"`). Use `labels` to supply a character vector of cluster labels,
+#'   which overrides `prefix`.
 #'
 #' @details
 #'
@@ -65,25 +67,25 @@
 #' @seealso [extract_cluster_assignment()] [extract_centroids()]
 #'
 #' @examples
-#' kmeans_spec <- k_means(num_clusters = 5) %>%
+#' kmeans_spec <- k_means(num_clusters = 5) |>
 #'   set_engine("stats")
 #'
 #' kmeans_fit <- fit(kmeans_spec, ~., mtcars)
 #'
-#' kmeans_fit %>%
+#' kmeans_fit |>
 #'   predict(new_data = mtcars)
 #'
 #' # Some models such as `hier_clust()` fits in such a way that you can specify
 #' # the number of clusters after the model is fit
-#' hclust_spec <- hier_clust() %>%
+#' hclust_spec <- hier_clust() |>
 #'   set_engine("stats")
 #'
 #' hclust_fit <- fit(hclust_spec, ~., mtcars)
 #'
-#' hclust_fit %>%
+#' hclust_fit |>
 #'   predict(new_data = mtcars[4:6, ], num_clusters = 2)
 #'
-#' hclust_fit %>%
+#' hclust_fit |>
 #'   predict(new_data = mtcars[4:6, ], cut_height = 250)
 #' @method predict cluster_fit
 #' @export predict.cluster_fit
@@ -141,21 +143,16 @@ prepare_data <- function(object, new_data) {
   fit_interface <- object$spec$method$fit$interface
 
   pp_names <- names(object$preproc)
-  if (any(pp_names == "terms") || any(pp_names == "x_var")) {
-    # Translation code
-    if (fit_interface == "formula") {
-      new_data <- .convert_x_to_form_new(object$preproc, new_data)
-    } else {
-      new_data <- .convert_form_to_x_new(object$preproc, new_data)$x
-    }
+  if (any(pp_names == "terms")) {
+    new_data <- .convert_form_to_x_new(object$preproc, new_data)$x
   }
 
   remove_intercept <-
-    modelenv::get_encoding(class(object$spec)[1]) %>%
-      dplyr::filter(mode == object$spec$mode, engine == object$spec$engine) %>%
-      dplyr::pull(remove_intercept)
+    modelenv::get_encoding(class(object$spec)[1]) |>
+    dplyr::filter(mode == object$spec$mode, engine == object$spec$engine) |>
+    dplyr::pull(remove_intercept)
   if (remove_intercept && any(grepl("Intercept", names(new_data)))) {
-    new_data <- new_data %>% dplyr::select(-dplyr::one_of("(Intercept)"))
+    new_data <- new_data |> dplyr::select(-dplyr::one_of("(Intercept)"))
   }
 
   switch(

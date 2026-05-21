@@ -2,7 +2,7 @@ test_that("fitting", {
   skip_if_not_installed("clustMixType")
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("clustMixType")
 
   expect_no_error(
@@ -15,7 +15,7 @@ test_that("fitting", {
 
   expect_true(res$fit$type %in% c("standard", "huang"))
 
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("clustMixType", type = "gower")
 
   res <- fit(spec, ~., iris)
@@ -27,7 +27,7 @@ test_that("predicting", {
   skip_if_not_installed("clustMixType")
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("clustMixType")
 
   res <- fit(spec, ~., iris)
@@ -42,7 +42,7 @@ test_that("predicting", {
 
 test_that("all levels are preserved with 1 row predictions", {
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("clustMixType")
 
   res <- fit(spec, ~., iris)
@@ -59,7 +59,7 @@ test_that("extract_centroids() works", {
   skip_if_not_installed("clustMixType")
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("clustMixType")
 
   res <- fit(spec, ~., iris)
@@ -81,7 +81,7 @@ test_that("extract_cluster_assignment() works", {
   skip_if_not_installed("clustMixType")
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("clustMixType")
 
   res <- fit(spec, ~., iris)
@@ -103,15 +103,47 @@ test_that("modifies errors about suggested other models", {
 
   expect_snapshot(
     error = TRUE,
-    k_means(num_clusters = 3) %>%
-      set_engine("clustMixType") %>%
+    k_means(num_clusters = 3) |>
+      set_engine("clustMixType") |>
       fit(~., data = mtcars)
   )
 
   expect_snapshot(
     error = TRUE,
-    k_means(num_clusters = 3) %>%
-      set_engine("clustMixType") %>%
+    k_means(num_clusters = 3) |>
+      set_engine("clustMixType") |>
       fit(~., data = data.frame(letters, LETTERS))
   )
+})
+
+test_that("axe_data removes training_data and predict still works", {
+  skip_if_not_installed("butcher")
+  skip_if_not_installed("clustMixType")
+
+  data <- iris
+  data$Species <- as.factor(data$Species)
+  k_fit <- k_means(num_clusters = 3) |>
+    set_engine("clustMixType") |>
+    fit(~., data = data)
+
+  k_axed <- butcher::axe_data(k_fit)
+
+  expect_null(attr(k_axed$fit, "training_data"))
+  expect_equal(nrow(predict(k_axed, data)), nrow(data))
+})
+
+test_that("axe_fitted empties cluster assignments and predict still works", {
+  skip_if_not_installed("butcher")
+  skip_if_not_installed("clustMixType")
+
+  data <- iris
+  data$Species <- as.factor(data$Species)
+  k_fit <- k_means(num_clusters = 3) |>
+    set_engine("clustMixType") |>
+    fit(~., data = data)
+
+  k_axed <- butcher::axe_fitted(k_fit)
+
+  expect_length(k_axed$fit$cluster, 0)
+  expect_equal(nrow(predict(k_axed, data)), nrow(data))
 })

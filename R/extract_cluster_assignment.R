@@ -5,7 +5,9 @@
 #'
 #' @param object An fitted [`cluster_spec`] object.
 #' @param ... Other arguments passed to methods. Using the `prefix` allows you
-#'   to change the prefix in the levels of the factor levels.
+#'   to change the prefix in the levels of the factor levels. Using `labels`
+#'   allows you to provide a character vector of cluster labels, overriding
+#'   `prefix`.
 #'
 #' @details
 #'
@@ -39,28 +41,31 @@
 #'
 #' @seealso [extract_centroids()] [predict.cluster_fit()]
 #' @examples
-#' kmeans_spec <- k_means(num_clusters = 5) %>%
+#' kmeans_spec <- k_means(num_clusters = 5) |>
 #'   set_engine("stats")
 #'
 #' kmeans_fit <- fit(kmeans_spec, ~., mtcars)
 #'
-#' kmeans_fit %>%
+#' kmeans_fit |>
 #'   extract_cluster_assignment()
 #'
-#' kmeans_fit %>%
+#' kmeans_fit |>
 #'   extract_cluster_assignment(prefix = "C_")
+#'
+#' kmeans_fit |>
+#'   extract_cluster_assignment(labels = c("A", "B", "C", "D", "E"))
 #'
 #' # Some models such as `hier_clust()` fits in such a way that you can specify
 #' # the number of clusters after the model is fit
-#' hclust_spec <- hier_clust() %>%
+#' hclust_spec <- hier_clust() |>
 #'   set_engine("stats")
 #'
 #' hclust_fit <- fit(hclust_spec, ~., mtcars)
 #'
-#' hclust_fit %>%
+#' hclust_fit |>
 #'   extract_cluster_assignment(num_clusters = 2)
 #'
-#' hclust_fit %>%
+#' hclust_fit |>
 #'   extract_cluster_assignment(cut_height = 250)
 #' @export
 extract_cluster_assignment <- function(object, ...) {
@@ -159,17 +164,81 @@ extract_cluster_assignment.hclust <- function(
   cluster_assignment_tibble(clusters, length(unique(clusters)), ...)
 }
 
+#' @export
+extract_cluster_assignment.dbscan <- function(object, ...) {
+  clusters <- dbscan_helper(object)
+
+  n_clusters <- length(unique(clusters[clusters != 0])) + 1
+  cluster_assignment_tibble_w_outliers(clusters, n_clusters, ...)
+}
+
+#' @export
+extract_cluster_assignment.hdbscan <- function(object, ...) {
+  clusters <- object$cluster
+  n_clusters <- length(unique(clusters[clusters != 0])) + 1
+  cluster_assignment_tibble_w_outliers(clusters, n_clusters, ...)
+}
+
+#' @export
+extract_cluster_assignment.ms <- function(object, ...) {
+  n_clusters <- nrow(object$cluster.center)
+  cluster_assignment_tibble(object$cluster.label, n_clusters, ...)
+}
+
+#' @export
+extract_cluster_assignment.ms_meanShiftR <- function(object, ...) {
+  n_clusters <- length(unique(object$assignment))
+  cluster_assignment_tibble(object$assignment, n_clusters, ...)
+}
+
+#' @export
+extract_cluster_assignment.Mclust <- function(object, ...) {
+  clusters <- object$classification
+  n_clusters <- length(unique(clusters))
+  cluster_assignment_tibble(clusters, n_clusters, ...)
+}
+
+
 # ------------------------------------------------------------------------------
 
 cluster_assignment_tibble <- function(
   clusters,
   n_clusters,
   ...,
-  prefix = "Cluster_"
+  prefix = "Cluster_",
+  labels = NULL
 ) {
   reorder_clusts <- order(union(unique(clusters), seq_len(n_clusters)))
-  names <- paste0(prefix, seq_len(n_clusters))
+  names <- make_cluster_labels(n_clusters, prefix, labels)
   res <- names[reorder_clusts][clusters]
 
-  tibble::tibble(.cluster = factor(res))
+  tibble::tibble(.cluster = factor(res, levels = names))
+}
+
+cluster_assignment_tibble_w_outliers <- function(
+  clusters,
+  n_clusters,
+  ...,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  no_outliers <- clusters[clusters != 0]
+  n_non_outlier_clusters <- n_clusters - 1
+  non_outlier_names <- make_cluster_labels(
+    n_non_outlier_clusters,
+    prefix,
+    labels
+  )
+  names <- c("Outlier", non_outlier_names)
+  if (n_clusters == 1) {
+    res <- rep("Outlier", length(clusters))
+  } else {
+    new_mappings <- c(
+      0,
+      order(union(unique(no_outliers), seq_len(n_non_outlier_clusters)))
+    )
+    res <- names[new_mappings[(clusters + 1)] + 1]
+  }
+
+  tibble::tibble(.cluster = factor(res, levels = names))
 }

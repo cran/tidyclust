@@ -7,7 +7,7 @@ test_that("fitting", {
   ames_cat <- dplyr::select(ames, dplyr::where(is.factor))
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("klaR")
 
   expect_no_error(
@@ -20,7 +20,7 @@ test_that("fitting", {
 
   expect_identical(res$fit$weighted, FALSE)
 
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("klaR", weighted = TRUE)
 
   res <- fit(spec, ~., ames_cat)
@@ -37,7 +37,7 @@ test_that("predicting", {
   ames_cat <- dplyr::select(ames, dplyr::where(is.factor))
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("klaR")
 
   res <- fit(spec, ~., ames_cat)
@@ -64,7 +64,7 @@ test_that("all levels are preserved with 1 row predictions", {
   ames_cat <- dplyr::select(ames, dplyr::where(is.factor))
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("klaR")
 
   res <- fit(spec, ~., ames_cat)
@@ -86,7 +86,7 @@ test_that("predicting ties argument works", {
   )
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 2) %>%
+  spec <- k_means(num_clusters = 2) |>
     set_engine("klaR")
 
   res <- fit(spec, ~., dat)
@@ -111,7 +111,7 @@ test_that("extract_centroids() works", {
   ames_cat <- dplyr::select(ames, dplyr::where(is.factor))
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("klaR")
 
   res <- fit(spec, ~., ames_cat)
@@ -138,7 +138,7 @@ test_that("extract_cluster_assignment() works", {
   ames_cat <- dplyr::select(ames, dplyr::where(is.factor))
 
   set.seed(1234)
-  spec <- k_means(num_clusters = 3) %>%
+  spec <- k_means(num_clusters = 3) |>
     set_engine("klaR")
 
   res <- fit(spec, ~., ames_cat)
@@ -156,4 +156,34 @@ test_that("extract_cluster_assignment() works", {
     clusters,
     expected
   )
+})
+
+test_that("axe_data removes training_data and predict still works", {
+  skip_if_not_installed("butcher")
+  skip_if_not_installed("klaR")
+
+  data <- data.frame(lapply(iris[, 1:4], \(x) cut(x, 3)))
+  k_fit <- k_means(num_clusters = 3) |>
+    set_engine("klaR") |>
+    fit(~., data = data)
+
+  k_axed <- butcher::axe_data(k_fit)
+
+  expect_null(attr(k_axed$fit, "training_data"))
+  expect_equal(nrow(predict(k_axed, data)), nrow(data))
+})
+
+test_that("axe_fitted empties cluster assignments and predict still works", {
+  skip_if_not_installed("butcher")
+  skip_if_not_installed("klaR")
+
+  data <- data.frame(lapply(iris[, 1:4], \(x) cut(x, 3)))
+  k_fit <- k_means(num_clusters = 3) |>
+    set_engine("klaR") |>
+    fit(~., data = data)
+
+  k_axed <- butcher::axe_fitted(k_fit)
+
+  expect_length(k_axed$fit$cluster, 0)
+  expect_equal(nrow(predict(k_axed, data)), nrow(data))
 })

@@ -10,12 +10,12 @@
 #' The elements `cluster_names` and `cluster_assignments` will be factors.
 #'
 #' @examples
-#' kmeans_spec <- k_means(num_clusters = 5) %>%
+#' kmeans_spec <- k_means(num_clusters = 5) |>
 #'   set_engine("stats")
 #'
 #' kmeans_fit <- fit(kmeans_spec, ~., mtcars)
 #'
-#' kmeans_fit %>%
+#' kmeans_fit |>
 #'   extract_fit_summary()
 #' @export
 extract_fit_summary <- function(object, ...) {
@@ -48,8 +48,14 @@ extract_fit_summary.workflow <- function(object, ...) {
 }
 
 #' @export
-extract_fit_summary.kmeans <- function(object, ..., prefix = "Cluster_") {
-  names <- paste0(prefix, seq_along(object$size))
+extract_fit_summary.kmeans <- function(
+  object,
+  ...,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  n_clusters <- length(object$size)
+  names <- make_cluster_labels(n_clusters, prefix, labels)
   names <- factor(names)
 
   cluster_asignments <- factor(
@@ -74,9 +80,11 @@ extract_fit_summary.kmeans <- function(object, ..., prefix = "Cluster_") {
 extract_fit_summary.KMeansCluster <- function(
   object,
   ...,
-  prefix = "Cluster_"
+  prefix = "Cluster_",
+  labels = NULL
 ) {
-  names <- paste0(prefix, seq_len(nrow(object$centroids)))
+  n_clusters <- nrow(object$centroids)
+  names <- make_cluster_labels(n_clusters, prefix, labels)
   names <- factor(names)
 
   cluster_asignments <- factor(
@@ -98,8 +106,14 @@ extract_fit_summary.KMeansCluster <- function(
 }
 
 #' @export
-extract_fit_summary.kproto <- function(object, ..., prefix = "Cluster_") {
-  names <- paste0(prefix, seq_len(nrow(object$centers)))
+extract_fit_summary.kproto <- function(
+  object,
+  ...,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  n_clusters <- nrow(object$centers)
+  names <- make_cluster_labels(n_clusters, prefix, labels)
   names <- factor(names)
 
   cluster_asignments <- factor(
@@ -121,8 +135,14 @@ extract_fit_summary.kproto <- function(object, ..., prefix = "Cluster_") {
 }
 
 #' @export
-extract_fit_summary.kmodes <- function(object, ..., prefix = "Cluster_") {
-  names <- paste0(prefix, seq_len(nrow(object$modes)))
+extract_fit_summary.kmodes <- function(
+  object,
+  ...,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  n_clusters <- nrow(object$modes)
+  names <- make_cluster_labels(n_clusters, prefix, labels)
   names <- factor(names)
 
   cluster_asignments <- factor(
@@ -152,6 +172,55 @@ extract_fit_summary.hclust <- function(object, ...) {
 
   overall_centroid <- colMeans(training_data)
 
+  by_clust <- training_data |>
+    tibble::as_tibble() |>
+    dplyr::mutate(
+      .cluster = clusts
+    ) |>
+    dplyr::group_by(.cluster) |>
+    tidyr::nest()
+
+  centroids <- by_clust$data |>
+    map(dplyr::summarize_all, mean) |>
+    dplyr::bind_rows()
+
+  sse_within_total_total <- map2_dbl(
+    by_clust$data,
+    seq_len(n_clust),
+    ~ sum(
+      philentropy::dist_many_many(
+        as.matrix(centroids[.y, ]),
+        as.matrix(.x),
+        method = "euclidean"
+      )
+    )
+  )
+
+  list(
+    cluster_names = unique(clusts),
+    centroids = centroids,
+    n_members = unname(as.integer(table(clusts))),
+    sse_within_total_total = sse_within_total_total,
+    sse_total = sum(
+      philentropy::dist_many_many(
+        t(overall_centroid),
+        as.matrix(training_data),
+        method = "euclidean"
+      )
+    ),
+    orig_labels = NULL,
+    cluster_assignments = clusts
+  )
+}
+
+#' @export
+extract_fit_summary.dbscan <- function(object, ...) {
+  clusts <- extract_cluster_assignment(object, ...)$.cluster
+  n_clust <- dplyr::n_distinct(clusts)
+  training_data <- attr(object, "training_data")
+
+  overall_centroid <- colMeans(training_data)
+
   by_clust <- training_data %>%
     tibble::as_tibble() %>%
     dplyr::mutate(
@@ -164,10 +233,213 @@ extract_fit_summary.hclust <- function(object, ...) {
     map(dplyr::summarize_all, mean) %>%
     dplyr::bind_rows()
 
+  outlier_idx <- which(unique(clusts) == "Outlier")
+
   sse_within_total_total <- map2_dbl(
     by_clust$data,
     seq_len(n_clust),
-    ~sum(
+    ~ sum(
+      philentropy::dist_many_many(
+        as.matrix(centroids[.y, ]),
+        as.matrix(.x),
+        method = "euclidean"
+      )
+    )
+  )
+
+  clust_names <- unique(clusts)[c(outlier_idx, setdiff(1:n_clust, outlier_idx))]
+  summary <- list(
+    cluster_names = clust_names,
+    centroids = centroids,
+    n_members = unname(as.integer(table(clusts))),
+    sse_within_total_total = sse_within_total_total,
+    sse_total = sum(
+      philentropy::dist_many_many(
+        t(overall_centroid),
+        as.matrix(training_data),
+        method = "euclidean"
+      )
+    ),
+    orig_labels = NULL,
+    cluster_assignments = clusts
+  )
+
+  summary$centroids[outlier_idx, ] <- rep(NA, ncol(summary$centroids))
+  summary$sse_within_total_total[outlier_idx] <- NA
+
+  # reorder centroids
+  summary$centroids <- summary$centroids[
+    c(outlier_idx, setdiff(1:n_clust, outlier_idx)),
+  ]
+
+  summary
+}
+
+#' @export
+extract_fit_summary.hdbscan <- function(object, ...) {
+  clusts <- extract_cluster_assignment(object, ...)$.cluster
+  n_clust <- dplyr::n_distinct(clusts)
+  training_data <- attr(object, "training_data")
+
+  overall_centroid <- colMeans(training_data)
+
+  by_clust <- training_data %>%
+    tibble::as_tibble() %>%
+    dplyr::mutate(
+      .cluster = clusts
+    ) %>%
+    dplyr::group_by(.cluster) %>%
+    tidyr::nest()
+
+  centroids <- by_clust$data %>%
+    map(dplyr::summarize_all, mean) %>%
+    dplyr::bind_rows()
+
+  outlier_idx <- which(unique(clusts) == "Outlier")
+
+  sse_within_total_total <- map2_dbl(
+    by_clust$data,
+    seq_len(n_clust),
+    ~ sum(
+      philentropy::dist_many_many(
+        as.matrix(centroids[.y, ]),
+        as.matrix(.x),
+        method = "euclidean"
+      )
+    )
+  )
+
+  clust_names <- unique(clusts)[c(outlier_idx, setdiff(1:n_clust, outlier_idx))]
+  summary <- list(
+    cluster_names = clust_names,
+    centroids = centroids,
+    n_members = unname(as.integer(table(clusts))),
+    sse_within_total_total = sse_within_total_total,
+    sse_total = sum(
+      philentropy::dist_many_many(
+        t(overall_centroid),
+        as.matrix(training_data),
+        method = "euclidean"
+      )
+    ),
+    orig_labels = NULL,
+    cluster_assignments = clusts
+  )
+
+  if (length(outlier_idx) > 0) {
+    summary$centroids[outlier_idx, ] <- rep(NA, ncol(summary$centroids))
+    summary$sse_within_total_total[outlier_idx] <- NA
+  }
+
+  # reorder centroids
+  summary$centroids <- summary$centroids[
+    c(outlier_idx, setdiff(1:n_clust, outlier_idx)),
+  ]
+
+  summary
+}
+
+#' @export
+extract_fit_summary.ms <- function(
+  object,
+  ...,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  n_clusters <- nrow(object$cluster.center)
+  names <- make_cluster_labels(n_clusters, prefix, labels)
+  names <- factor(names)
+
+  cluster_assignments <- factor(
+    names[object$cluster.label],
+    levels = levels(names)
+  )
+
+  centroids <- sweep(object$cluster.center, 2, object$scaled.by, "*")
+  centroids <- tibble::as_tibble(centroids, .name_repair = "minimal")
+  if (ncol(centroids) > 0 && all(colnames(centroids) == "")) {
+    colnames(centroids) <- colnames(object$data)
+  }
+
+  n_members <- as.integer(table(factor(
+    object$cluster.label,
+    levels = seq_len(n_clusters)
+  )))
+
+  list(
+    cluster_names = names,
+    centroids = centroids,
+    n_members = n_members,
+    sse_within_total_total = NULL,
+    sse_total = NULL,
+    orig_labels = object$cluster.label,
+    cluster_assignments = cluster_assignments
+  )
+}
+
+#' @export
+extract_fit_summary.ms_meanShiftR <- function(
+  object,
+  ...,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  centroids <- meanShiftR_centers(object)
+  n_clusters <- nrow(centroids)
+  names <- make_cluster_labels(n_clusters, prefix, labels)
+  names <- factor(names)
+
+  cluster_assignments <- factor(
+    names[object$assignment],
+    levels = levels(names)
+  )
+
+  centroids <- tibble::as_tibble(centroids, .name_repair = "minimal")
+  if (ncol(centroids) > 0 && all(colnames(centroids) == "")) {
+    colnames(centroids) <- colnames(object$trainData)
+  }
+
+  n_members <- as.integer(table(factor(
+    object$assignment,
+    levels = seq_len(n_clusters)
+  )))
+
+  list(
+    cluster_names = names,
+    centroids = centroids,
+    n_members = n_members,
+    sse_within_total_total = NULL,
+    sse_total = NULL,
+    orig_labels = object$assignment,
+    cluster_assignments = cluster_assignments
+  )
+}
+
+#' @export
+extract_fit_summary.Mclust <- function(object, ...) {
+  clusts <- extract_cluster_assignment(object, ...)$.cluster
+  n_clust <- dplyr::n_distinct(clusts)
+  training_data <- attr(object, "training_data")
+
+  overall_centroid <- colMeans(training_data)
+
+  by_clust <- training_data %>%
+    tibble::as_tibble() %>%
+    dplyr::mutate(
+      .cluster = clusts
+    ) %>%
+    dplyr::filter(.cluster != "Outlier") %>%
+    dplyr::group_by(.cluster) %>%
+    tidyr::nest()
+
+  centroids <- by_clust$data %>%
+    map(dplyr::summarize_all, mean) %>%
+    dplyr::bind_rows()
+
+  sse_within_total_total <- map2_dbl(
+    by_clust$data,
+    seq_len(n_clust),
+    ~ sum(
       philentropy::dist_many_many(
         as.matrix(centroids[.y, ]),
         as.matrix(.x),

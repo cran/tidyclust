@@ -1,39 +1,80 @@
-make_predictions <- function(x, prefix, n_clusters) {
-  levels <- seq_len(n_clusters)
-  factor(x, levels = levels, labels = paste0(prefix, levels))
+make_cluster_labels <- function(n_clusters, prefix, labels) {
+  if (!is.null(labels)) {
+    if (length(labels) < n_clusters) {
+      cli::cli_abort(
+        "{.arg labels} must have length {n_clusters}, not {length(labels)}."
+      )
+    }
+    labels <- labels[seq_len(n_clusters)]
+    dupes <- unique(labels[duplicated(labels)])
+    if (length(dupes) > 0) {
+      cli::cli_abort(
+        "{.arg labels} must not contain duplicate values. Duplicated: {.val {dupes}}."
+      )
+    }
+    labels
+  } else {
+    paste0(prefix, seq_len(n_clusters))
+  }
 }
 
-.k_means_predict_stats <- function(object, new_data, prefix = "Cluster_") {
+make_predictions <- function(x, prefix, n_clusters, labels = NULL) {
+  levels <- seq_len(n_clusters)
+  fct_labels <- make_cluster_labels(n_clusters, prefix, labels)
+  factor(x, levels = levels, labels = fct_labels)
+}
+
+make_predictions_w_outliers <- function(x, prefix, n_clusters, labels = NULL) {
+  levels <- 0:(n_clusters - 1)
+  non_outlier_labels <- make_cluster_labels(n_clusters - 1, prefix, labels)
+  fct_labels <- c("Outlier", non_outlier_labels)
+  factor(x, levels = levels, labels = fct_labels)
+}
+
+
+.k_means_predict_stats <- function(
+  object,
+  new_data,
+  prefix = "Cluster_",
+  labels = NULL
+) {
   res <- object$centers
   res <- flexclust::dist2(res, new_data)
   res <- apply(res, 2, which.min)
 
-  make_predictions(res, prefix, length(object$size))
+  make_predictions(res, prefix, length(object$size), labels)
 }
 
-.k_means_predict_ClusterR <- function(object, new_data, prefix = "Cluster_") {
+.k_means_predict_ClusterR <- function(
+  object,
+  new_data,
+  prefix = "Cluster_",
+  labels = NULL
+) {
   clusters <- predict(object, new_data)
   n_clusters <- length(object$obs_per_cluster)
 
-  make_predictions(clusters, prefix, n_clusters)
+  make_predictions(clusters, prefix, n_clusters, labels)
 }
 
 .k_means_predict_clustMixType <- function(
   object,
   new_data,
-  prefix = "Cluster_"
+  prefix = "Cluster_",
+  labels = NULL
 ) {
   clusters <- predict(object, new_data)$cluster
   n_clusters <- length(object$size)
 
-  make_predictions(clusters, prefix, n_clusters)
+  make_predictions(clusters, prefix, n_clusters, labels)
 }
 
 .k_means_predict_klaR <- function(
   object,
   new_data,
   prefix = "Cluster_",
-  ties = c("first", "last", "random")
+  ties = c("first", "last", "random"),
+  labels = NULL
 ) {
   ties <- rlang::arg_match(ties)
 
@@ -62,7 +103,7 @@ make_predictions <- function(x, prefix, n_clusters) {
     }
   }
 
-  make_predictions(clusters, prefix, n_modes)
+  make_predictions(clusters, prefix, n_modes, labels)
 }
 
 .hier_clust_predict_stats <- function(
@@ -102,17 +143,17 @@ make_predictions <- function(x, prefix, n_clusters) {
       method = "euclidean"
     )
 
-    cluster_dists <- dplyr::bind_cols(data.frame(dists_new), clusters) %>%
-      dplyr::group_by(.cluster) %>%
+    cluster_dists <- dplyr::bind_cols(data.frame(dists_new), clusters) |>
+      dplyr::group_by(.cluster) |>
       dplyr::summarize_all(cluster_dist_fun)
 
-    pred_clusts_num <- cluster_dists %>%
-      dplyr::select(-.cluster) %>%
+    pred_clusts_num <- cluster_dists |>
+      dplyr::select(-.cluster) |>
       map_dbl(which.min)
   } else if (linkage_method == "centroid") {
     ## Centroid linkage_method, dist to center
 
-    cluster_centers <- extract_centroids(object) %>% dplyr::select(-.cluster)
+    cluster_centers <- extract_centroids(object) |> dplyr::select(-.cluster)
 
     dists_means <- philentropy::dist_many_many(
       new_data,
@@ -133,10 +174,12 @@ make_predictions <- function(x, prefix, n_clusters) {
 
     d_means <- map(
       seq_len(n_clust),
-      ~t(
-        t(training_data[clusters$.cluster == cluster_names[.x], ]) -
-          cluster_centers[.x, ]
-      )
+      \(.x) {
+        t(
+          t(training_data[clusters$.cluster == cluster_names[.x], ]) -
+            cluster_centers[.x, ]
+        )
+      }
     )
 
     d_new_list <- map(
@@ -144,10 +187,12 @@ make_predictions <- function(x, prefix, n_clusters) {
       function(new_obs) {
         map(
           seq_len(n_clust),
-          ~t(
-            t(training_data[clusters$.cluster == cluster_names[.x], ]) -
-              new_data[new_obs, ]
-          )
+          \(.x) {
+            t(
+              t(training_data[clusters$.cluster == cluster_names[.x], ]) -
+                new_data[new_obs, ]
+            )
+          }
         )
       }
     )
@@ -160,7 +205,7 @@ make_predictions <- function(x, prefix, n_clusters) {
         map2_dbl(
           d_means,
           v,
-          ~sum((n * .x + .y)^2 / (n + 1)^2 - .x^2)
+          \(.x, .y) sum((n * .x + .y)^2 / (n + 1)^2 - .x^2)
         )
       }
     )
@@ -174,4 +219,122 @@ make_predictions <- function(x, prefix, n_clusters) {
   pred_clusts <- unique(clusters$.cluster)[pred_clusts_num]
 
   pred_clusts
+}
+
+.db_clust_predict_dbscan <- function(
+  object,
+  new_data,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  is_core <- attr(object, "is_core")
+  training_data <- attr(object, "training_data")
+  cp <- training_data[is_core, ]
+  cp_clusters <- object$cluster[is_core]
+  eps <- attr(object, "radius")
+
+  if (sum(is_core) == 0) {
+    clusters <- (rep(0, nrow(new_data)))
+    n_clusters <- 1
+  } else {
+    nn <- dbscan::frNN(cp, query = new_data, eps = eps, sort = TRUE)
+
+    clusters <- vapply(
+      nn$id,
+      function(nns) if (length(nns) == 0L) 0L else cp_clusters[nns[1L]],
+      integer(1L)
+    )
+
+    n_clusters <- length(unique(object$cluster[object$cluster != 0])) + 1
+  }
+
+  make_predictions_w_outliers(clusters, prefix, n_clusters, labels)
+}
+
+.db_clust_predict_hdbscan <- function(
+  object,
+  new_data,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  training_data <- attr(object, "training_data")
+  clusters <- object$cluster
+  n_clusters <- length(unique(clusters[clusters != 0])) + 1
+
+  preds <- stats::predict(object, newdata = new_data, data = training_data)
+
+  make_predictions_w_outliers(preds, prefix, n_clusters, labels)
+}
+
+.mean_shift_predict_LPCM <- function(
+  object,
+  new_data,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  modes <- object$cluster.center
+  scaled_by <- object$scaled.by
+  h <- object$h
+  X_scaled <- as.matrix(object$data)
+
+  new_data <- as.matrix(new_data)
+  new_data_scaled <- sweep(new_data, 2, scaled_by, "/")
+
+  clusters <- vapply(
+    seq_len(nrow(new_data_scaled)),
+    function(i) {
+      final <- LPCM::ms.rep(X = X_scaled, x = new_data_scaled[i, ], h = h)$final
+      dists <- rowSums(sweep(modes, 2, final, "-")^2)
+      which.min(dists)
+    },
+    integer(1)
+  )
+
+  n_clusters <- nrow(modes)
+  make_predictions(clusters, prefix, n_clusters, labels)
+}
+
+.mean_shift_predict_meanShiftR <- function(
+  object,
+  new_data,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  centers <- meanShiftR_centers(object)
+
+  new_data <- as.matrix(new_data)
+  pred <- meanShiftR::meanShift(
+    queryData = new_data,
+    trainData = object$trainData,
+    bandwidth = object$bandwidth
+  )
+
+  pred_modes <- pred$value
+  clusters <- vapply(
+    seq_len(nrow(pred_modes)),
+    function(i) {
+      which.min(rowSums(sweep(centers, 2, pred_modes[i, ], "-")^2))
+    },
+    integer(1)
+  )
+
+  n_clusters <- nrow(centers)
+  make_predictions(clusters, prefix, n_clusters, labels)
+}
+
+meanShiftR_centers <- function(object) {
+  ids <- sort(unique(object$assignment))
+  object$value[match(ids, object$assignment), , drop = FALSE]
+}
+
+.gm_clust_predict_mclust <- function(
+  object,
+  new_data,
+  prefix = "Cluster_",
+  labels = NULL
+) {
+  clusters <- predict(object, newdata = new_data)$classification
+  n_clusters <- attr(object, "num_clusters")
+
+  make_predictions(clusters, prefix, n_clusters, labels)
 }

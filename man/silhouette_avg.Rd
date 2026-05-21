@@ -33,8 +33,12 @@ silhouette_avg_vec(
 
 \item{dists}{A distance matrix. Used if \code{new_data} is \code{NULL}.}
 
-\item{dist_fun}{A function for calculating distances between observations.
-Defaults to Euclidean distance on processed data.}
+\item{dist_fun}{A function of the form \verb{function(x)} that takes a data
+frame or matrix and returns a \code{dist} object. Defaults to
+\code{philentropy::distance} with Euclidean distance. See
+\code{philentropy::getDistMethods()} for a list of supported methods, and
+\code{vignette("tuning_and_metrics", package = "tidyclust")} for usage
+examples.}
 }
 \value{
 A double; the average silhouette.
@@ -44,16 +48,19 @@ Measures average silhouette across all observations
 }
 \details{
 Not to be confused with \code{\link[=silhouette]{silhouette()}} that returns a tibble
-with silhouette for each observation.
+with silhouette for each observation. The silhouette coefficient ranges
+from -1 to 1, where values close to 1 indicate well-separated clusters.
+This metric has \code{direction = "maximize"}, so \code{\link[tune:show_best]{tune::select_best()}} and
+\code{\link[tune:show_best]{tune::show_best()}} will return models with the highest silhouette values.
 }
 \examples{
-kmeans_spec <- k_means(num_clusters = 5) \%>\%
+kmeans_spec <- k_means(num_clusters = 5) |>
   set_engine("stats")
 
 kmeans_fit <- fit(kmeans_spec, ~., mtcars)
 
-dists <- mtcars \%>\%
-  as.matrix() \%>\%
+dists <- mtcars |>
+  as.matrix() |>
   dist()
 
 silhouette_avg(kmeans_fit, dists = dists)

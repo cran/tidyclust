@@ -1,18 +1,30 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# tidyclust <img src="man/figures/logo.svg" align="right" height="139" />
+# tidyclust <a href="https://tidyclust.tidymodels.org"><img src="man/figures/logo.png" align="right" height="138" alt="tidyclust website" /></a>
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/tidyclust)](https://CRAN.R-project.org/package=tidyclust)
 [![Codecov test
 coverage](https://codecov.io/gh/tidymodels/tidyclust/branch/main/graph/badge.svg)](https://app.codecov.io/gh/tidymodels/tidyclust?branch=main)
 [![R-CMD-check](https://github.com/tidymodels/tidyclust/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/tidymodels/tidyclust/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of tidyclust is to provide a tidy, unified interface to
-clustering models. The packages is closely modeled after the
+clustering models. The package is closely modeled after the
 [parsnip](https://parsnip.tidymodels.org/) package.
+
+## Available models
+
+| Model            | Function       | Engines                             |
+|------------------|----------------|-------------------------------------|
+| K-Means          | `k_means()`    | stats, ClusterR, klaR, clustMixType |
+| Hierarchical     | `hier_clust()` | stats                               |
+| Density-based    | `db_clust()`   | dbscan, hdbscan                     |
+| Gaussian mixture | `gm_clust()`   | mclust                              |
+| Mean shift       | `mean_shift()` | LPCM, meanShiftR                    |
 
 ## Installation
 
@@ -40,7 +52,7 @@ example we are creating a K-means model, using the `stats` engine.
 library(tidyclust)
 set.seed(1234)
 
-kmeans_spec <- k_means(num_clusters = 3) %>%
+kmeans_spec <- k_means(num_clusters = 3) |>
   set_engine("stats")
 
 kmeans_spec
@@ -55,7 +67,7 @@ kmeans_spec
 This specification can then be fit using data.
 
 ``` r
-kmeans_spec_fit <- kmeans_spec %>%
+kmeans_spec_fit <- kmeans_spec |>
   fit(~., data = mtcars)
 kmeans_spec_fit
 #> tidyclust cluster object

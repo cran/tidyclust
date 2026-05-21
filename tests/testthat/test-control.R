@@ -1,5 +1,5 @@
 test_that("control class", {
-  x <- k_means(num_clusters = 5) %>% set_engine("stats")
+  x <- k_means(num_clusters = 5) |> set_engine("stats")
 
   expect_no_error(
     fit(x, ~., data = mtcars, control = parsnip::control_parsnip())
@@ -30,4 +30,14 @@ test_that("control_cluster() error with wrong input", {
     error = TRUE,
     control_cluster(catch = "yes")
   )
+})
+
+test_that("print.control_cluster() works", {
+  expect_snapshot(print(control_cluster()))
+
+  expect_snapshot(print(control_cluster(verbosity = 2)))
+
+  expect_snapshot(print(control_cluster(catch = TRUE)))
+
+  expect_snapshot(print(control_cluster(verbosity = 2, catch = TRUE)))
 })
