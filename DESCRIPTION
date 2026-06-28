@@ -1,6 +1,6 @@
 Package: tidyclust
 Title: A Common API to Clustering
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(
     person("Emil", "Hvitfeldt", , "emil.hvitfeldt@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0679-1945")),
@@ -36,11 +36,11 @@ Encoding: UTF-8
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0
 NeedsCompilation: no
-Packaged: 2026-06-20 08:10:19 UTC; emilhvitfeldt
+Packaged: 2026-06-28 20:46:12 UTC; emilhvitfeldt
 Author: Emil Hvitfeldt [aut, cre] (ORCID:
     <https://orcid.org/0000-0002-0679-1945>),
   Kelly Bodwin [aut],
   Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)
 Maintainer: Emil Hvitfeldt <emil.hvitfeldt@posit.co>
 Repository: CRAN
-Date/Publication: 2026-06-20 08:40:02 UTC
+Date/Publication: 2026-06-28 21:30:02 UTC
